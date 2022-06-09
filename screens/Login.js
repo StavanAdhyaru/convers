@@ -193,7 +193,7 @@ const Login = ({ navigation }) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        // onPress={() => navigation.navigate('SignUp')}
+                        onPress={() => navigation.navigate('Register')}
                         style={[styles.signIn, {
                             borderColor: '#009387',
                             borderWidth: 1,
