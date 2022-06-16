@@ -21,15 +21,15 @@ const height_logo = height * 0.28;
 
 const HomePage = ({ navigation }) => {
     const handleUploadPhoto = () => {
-        navigation.replace('UploadProfilePicture');
+        navigation.navigate('UploadProfilePicture');
     }
 
     const handleChatScreen = () => {
-        navigation.replace('Chat');
+        navigation.navigate('Chat');
     }
 
     const handleSettingsScreen = () => {
-        navigation.replace('Settings');
+        navigation.navigate('Settings');
     }
 
     return(
