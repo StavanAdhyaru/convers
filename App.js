@@ -7,6 +7,7 @@ import HomePage from './screens/HomePage';
 import Registration from './screens/registration';
 import SettingsPage from './screens/SettingsPage';
 import Chat from './screens/Chat';
+import UploadProfilePicture from './screens/profilePicture';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
         <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
         <Stack.Screen options={{ headerShown: false }} name="Settings" component={SettingsPage} />
         <Stack.Screen  name="Chat" component={Chat} />
+        <Stack.Screen options={{ headerShown: false }} name="UploadProfilePicture" component={UploadProfilePicture} />
       </Stack.Navigator>
     </NavigationContainer>
   )
