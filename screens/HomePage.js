@@ -1,9 +1,15 @@
-import {View,StyleSheet,Text} from 'react-native';
+import {View,StyleSheet,Text,Button} from 'react-native';
 
-const HomePage = () => {
+const HomePage = ({navigation}) => {
     return(
         <View style={styles.container}>
             <Text>HomePage</Text>
+
+            <Button title="Chat" onPress={() => navigation.navigate('Chat')}/>
+            <Button title="Settings" onPress={() => {
+                navigation.navigate('Settings');
+            }
+            }/>
         </View>
     );
 }
