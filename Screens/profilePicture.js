@@ -13,21 +13,20 @@ import {
     Dimensions,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
-// import * as ImagePicker from "react-native-image-picker"
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from "expo-linear-gradient";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
 import { auth, fireDB, storage } from "../firebase";
-// import storage from '@react-native-firebase/storage';
 const { height } = Dimensions.get("screen");
 const height_logo = height * 0.28;
 
 const UploadProfilePicture = () => {
     const currentUser = auth.currentUser
     const dbRef = fireDB.collection("users");
-    // const storageRef = storage().ref(`images/${currentUser.uid}`);
+    
     const [photo, setPhoto] = useState("");
+    const [url, setUrl] = useState("");
     const [data, setData] = useState({
         name: "",
         email: "",
@@ -75,30 +74,10 @@ const UploadProfilePicture = () => {
                 quality: 1
               });
           
-            //   console.log(result);
-          
             if (!result.cancelled) {  
                 setPhoto(result);
                 
             }
-
-            // ImagePicker.launchImageLibrary({
-            //     mediaType: 'photo',
-            //     includeBase64: true,
-            //     maxHeight: 200,
-            //     maxWidth: 200,
-
-            // },(response) => {
-            //     console.log('response: ', response);
-
-            // }).then((value) => {
-            //     console.log('value: ', value);
-
-            // }).catch((error) => {
-            //     console.log('error: ', error);
-
-            // })
-
 
         } catch (error) {
             console.log("error2: ", error);
@@ -113,9 +92,22 @@ const UploadProfilePicture = () => {
         return ref.put(blob)
     }
 
+    const saveImageLinkInUser = async () => {
+        let result = await fireDB.collection("users").doc(`${currentUser.uid}`).update({profileImageUrl: url});
+        console.log('result: ', result);
+    }
+
+    const getImageLink = async () => {
+        let url = await storage.ref("images").child(`${currentUser.uid}`).getDownloadURL();
+        console.log('url: ', url);
+        setUrl(url);
+    }
+
     const handleUploadPhoto = async () => {
         try {
             await uploadImage();
+            await getImageLink();
+            await saveImageLinkInUser();
             alert("Image uploaded!");
             
         } catch (error) {
@@ -125,16 +117,13 @@ const UploadProfilePicture = () => {
 
     return (
         <View style={styles.container}>
-            <Animatable.View
-                animation='fadeInUp'
-                style={styles.footer}
-            >
+            <Animatable.View animation="fadeInUp" style={styles.footer}>
                 <View
                     style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
                 >
                     <Text>
                         {photo && (
-                            <View style={styles.button}>
+                            <View>
                                 <Image
                                     source={{ uri: photo.uri }}
                                     style={{ width: 300, height: 300 }}
@@ -142,7 +131,7 @@ const UploadProfilePicture = () => {
                                 <Button title="Upload Photo" onPress={handleUploadPhoto} />
                             </View>
                         )}
-                        <View style={styles.button}>
+                        <View>
                             <Button title="Choose Photo" onPress={handleChoosePhoto} />
                         </View>
                     </Text>
@@ -212,7 +201,6 @@ const styles = StyleSheet.create({
     button: {
         alignItems: "center",
         marginTop: 25,
-        
     },
     signIn: {
         width: 340,
