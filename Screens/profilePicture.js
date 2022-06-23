@@ -23,7 +23,7 @@ import { auth, fireDB, fireStorage } from "../firebase";
 const { height } = Dimensions.get("screen");
 const height_logo = height * 0.28;
 
-const UploadProfilePicture = () => {
+const UploadProfilePicture = ({navigation}) => {
     const currentUser = auth.currentUser
     const dbRef = fireDB.collection("users");
     const storageRef = fireStorage.ref('images/');
@@ -101,6 +101,7 @@ const UploadProfilePicture = () => {
             }
             storageRef.child(`${currentUser.uid}`).put(uploadUri, metadata).then((snapshot) => {
                 console.log('snapshot: ');
+                navigation.navigate('Home');
 
             })
 

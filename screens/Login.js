@@ -22,15 +22,15 @@ const height_logo = height * 0.28;
 
 const Login = ({ navigation }) => {
 
-    // useEffect(() => {
-    //     const unsubscribe = auth.onAuthStateChanged(user => {
-    //         if (user) {
-    //             navigation.replace("Home")
-    //         }
-    //     })
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            if (user) {
+                navigation.replace("Home")
+            }
+        })
 
-    //     return unsubscribe;
-    // }, []);
+        return unsubscribe;
+    }, []);
 
     const [data, setData] = useState({
         email: '',
@@ -106,6 +106,10 @@ const Login = ({ navigation }) => {
                     console.log(error);
                     Alert.alert("Email or password is incorrect");
                 });
+        }else if (!data.check_textInputChange){
+            Alert.alert("Please enter a valid email");
+        }else if (!data.check_passwordInputChange){
+            Alert.alert("Please enter a valid password");
         }
     }
 

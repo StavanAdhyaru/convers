@@ -1,37 +1,20 @@
 import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-// import { Avatar } from 'react-native-elements';
-// import { auth, db } from '../firebase';
-// import { signOut } from 'firebase/auth';
 import { GiftedChat } from 'react-native-gifted-chat';
  
 const Chat = ({ navigation }) => {
    const [messages, setMessages] = useState([]);
-//    const signOutNow = () => {
-//        signOut(auth).then(() => {
-//            // Sign-out successful.
-//            navigation.replace('Login');
-//        }).catch((error) => {
-//            // An error happened.
-//        });
-//    }
+
    useLayoutEffect(() => {
        navigation.setOptions({
            headerLeft: () => (
                <View style={{ marginLeft: 20 }}>
-                   {/* <Avatar
-                       rounded
-                       source={{
-                           uri: auth?.currentUser?.photoURL,
-                       }}
-                   /> */}
                </View>
            ),
            headerRight: () => (
                <TouchableOpacity style={{
                    marginRight: 10
                }}
-                //    onPress={signOutNow}
                >
                    <Text>logout</Text>
                </TouchableOpacity>

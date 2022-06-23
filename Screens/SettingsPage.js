@@ -39,13 +39,18 @@ const SettingsPage = ({ navigation }) => {
     const signOut = () => {
         auth.signOut()
             .then(() => {
-                navigation.replace("Login");
+                navigation.replace("Log");
             })
             .catch(error => {
                 console.log(error);
             }
             );
     }
+
+    const changePasswortd = () => {
+        navigation.navigate('CP');
+    }
+
     const getUserDataFromDB = async () => {
         try {
             console.log("in getUserDataFromDB");
@@ -71,7 +76,6 @@ const SettingsPage = ({ navigation }) => {
                 // ...userData,
                 name: data.name,
                 contactNumber: data.contactNumber,
-                address: data.address
             });
             console.log("User saved:: ", userSaved);
         } catch (error) {
@@ -246,35 +250,6 @@ const SettingsPage = ({ navigation }) => {
                             </Animatable.View>
                             : null}
                     </View>
-                    {/* Address */}
-                    {/* <Text style={[styles.text_footer, {
-                        marginTop: 15
-                    }]}>Address</Text>
-                    <View style={styles.action}>
-                        <Feather
-                            name="map-pin"
-                            color="#05375a"
-                            size={20}
-                        />
-                        <TextInput
-                            placeholder="your Address"
-                            style={styles.textInput}
-                            autoCapitalize="none"
-                            value={data.address}
-                            onChangeText={(val) => handleAddressChange(val)}
-                        />
-                        {data.check_addressInputChange ?
-                            <Animatable.View
-                                animation="bounceIn"
-                            >
-                                <Feather
-                                    name="check-circle"
-                                    color="green"
-                                    size={20}
-                                />
-                            </Animatable.View>
-                            : null}
-                    </View> */}
                     {/* Edit/Save account Button */}
                     <View style={styles.button}>
                         <LinearGradient
@@ -287,6 +262,21 @@ const SettingsPage = ({ navigation }) => {
                                 <Text style={[styles.textSign, {
                                     color: '#fff'
                                 }]}>{isEditMode ? "Save" : "Edit"}</Text>
+                            </TouchableOpacity>
+                        </LinearGradient>
+                    </View>
+                    {/* Change Password Button */}
+                    <View style={styles.button}>
+                        <LinearGradient
+                            colors={['#08d4c4', '#01ab9d']}
+                            style={styles.deleteAccount}
+                        >
+                            <TouchableOpacity 
+                                onPress={changePasswortd}
+                            >
+                                <Text style={[styles.textSign, {
+                                    color: '#fff'
+                                }]}>Change Password</Text>
                             </TouchableOpacity>
                         </LinearGradient>
                     </View>
@@ -320,6 +310,8 @@ const SettingsPage = ({ navigation }) => {
                             </TouchableOpacity>
                         </LinearGradient>
                     </View>
+
+                    
                 </Animatable.View>
             </View>
     );

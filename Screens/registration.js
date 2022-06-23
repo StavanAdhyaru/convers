@@ -216,6 +216,9 @@ const Registration = () => {
     return (
         <View style={styles.container}>
             {/* <Text>Open up App.js to start working on your app!</Text>    */}
+            <View style={styles.header}>
+                <Text style={styles.text_header}>Registration!</Text>
+            </View>
             <Animatable.View
                 animation='fadeInUp'
                 style={styles.footer}
@@ -386,7 +389,7 @@ const Registration = () => {
                 <View style={styles.button}>
 
                     <LinearGradient
-                        colors={['#9dd6f5', '#83b3f2']}
+                        colors={['#009387', '#009387']}
                         style={styles.signIn}
                     >
                         <TouchableOpacity onPress={handleSignUp}>
@@ -404,7 +407,7 @@ const Registration = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#9dd6f5'
+        backgroundColor: '#009387'
     },
     header: {
         flex: 1,

@@ -1,79 +1,65 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import { useState, useEffect } from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    TextInput,
-    Platform,
     StyleSheet,
-    StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image
+    Dimensions
 } from 'react-native';
-import * as Animatable from 'react-native-animatable';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Feather from 'react-native-vector-icons/Feather';
-import { auth, fireDB } from '../firebase';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import SettingsPage from './SettingsPage';
+import ContactListPage from './ContactListPage';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Login from './Login';
+import Chat from './Chat';
+import ChangePasswordScreen from './ChangePassword';
+import Registration from './registration';
+
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
+const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 const HomePage = ({ navigation }) => {
-    const handleUploadPhoto = () => {
-        navigation.navigate('UploadProfilePicture');
-    }
+    return (
+        <NavigationContainer independent={true}>
+            <Stack.Navigator>
+                <Stack.Screen
+                    name="Tab"
+                    component={TabStackNavigator}
+                    options={{ headerShown: false }} />
+                <Stack.Screen options={{headerShown:false}} name="Log" component={Login} />
+                <Stack.Screen options={{headerShown:false}} name="CP" component={ChangePasswordScreen}/>
+                <Stack.Screen options={{headerShown:false}} name="Home" component={HomePage}/>
+                <Stack.Screen name="Chat" component={Chat}/>
+                <Stack.Screen options={{headerShown:false}} name="Register" component={Registration}/>
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
+}
 
-    const handleChatScreen = () => {
-        navigation.navigate('Chat');
-    }
+const TabStackNavigator = () => {
+    return (
+        <Tab.Navigator
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
 
-    const handleSettingsScreen = () => {
-        navigation.navigate('Settings');
-    }
+                    if (route.name === 'ContactListPage') {
+                        iconName = focused
+                            ? 'chatbubbles'
+                            : 'chatbubbles-outline';
+                    } else if (route.name === 'SettingsPage') {
+                        iconName = focused ? 'ios-information-circle' : 'ios-information-circle-outline';
+                    }
 
-    return(
-        <View style={styles.container}>
-            <Text>HomePage</Text>
-            <View style={styles.button}>
-                <LinearGradient
-                    colors={['#9dd6f5', '#83b3f2']}
-                    style={styles.signIn}
-                >
-                    <TouchableOpacity onPress={handleUploadPhoto}>
-                        <Text style={[styles.textSign, {
-                            color: '#fff'
-                        }]}>Upload photo</Text>
-                    </TouchableOpacity>
-                </LinearGradient>
-            </View>
-
-            <View style={styles.button}>
-                <LinearGradient
-                    colors={['#9dd6f5', '#83b3f2']}
-                    style={styles.signIn}
-                >
-                    <TouchableOpacity onPress={handleChatScreen}>
-                        <Text style={[styles.textSign, {
-                            color: '#fff'
-                        }]}>Chat</Text>
-                    </TouchableOpacity>
-                </LinearGradient>
-            </View>
-
-            <View style={styles.button}>
-                <LinearGradient
-                    colors={['#9dd6f5', '#83b3f2']}
-                    style={styles.signIn}
-                >
-                    <TouchableOpacity onPress={handleSettingsScreen}>
-                        <Text style={[styles.textSign, {
-                            color: '#fff'
-                        }]}>Settings</Text>
-                    </TouchableOpacity>
-                </LinearGradient>
-            </View>
-        </View>
+                    // You can return any component that you like here!
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+                tabBarActiveTintColor: '#009387',
+                tabBarInactiveTintColor: 'gray',
+            })}>
+            <Tab.Screen options={{title:'Chats', headerTintColor:'#009387'}} name="ContactListPage" component={ContactListPage} />
+            <Tab.Screen options={{headerShown:false, title:'Settings'}} name="SettingsPage" component={SettingsPage} />
+        </Tab.Navigator>
     );
 }
 
