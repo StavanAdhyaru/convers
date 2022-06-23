@@ -195,11 +195,10 @@ const Registration = () => {
                         });
                         setDefaults();
                         Alert.alert('Success', 'You are successfully registered', [{ text: 'OK' }]);
-                        navigation.replace("Home");
+                        navigation.replace("UploadProfilePicture");
                     })
                     .catch(error => {
                         console.log(error);
-                        Alert.alert('Error', "Email alredy exists", [{ text: 'OK' }]);
                     });
 
                 // navigation.navigate('Home');

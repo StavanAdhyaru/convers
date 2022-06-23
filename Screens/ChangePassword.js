@@ -24,42 +24,51 @@ const ChangePasswordScreen = ({ navigation }) => {
         oldPassword: '',
         password: '',
         confirmPassword: '',
-        check_OldPassword:true,
+        check_OldPassword:false,
         check_confirmPasswordInputChange: false,
         check_NewPasswordInputChange: false,
-        secureTextEntry: true,
-        securePasswordEntry: true,
+        secureOldTextEntry: true,
+        secureNewPasswordEntry: true,
+        secureConfirmPasswordEntry: true
     });
-    const [isEditMode, setIsEditMode] = useState(false);
-    const signOut = () => {
-        auth.signOut()
-            .then(() => {
-                navigation.replace("Login");
-            })
-            .catch(error => {
-                console.log(error);
-            }
-            );
-    }
-    const saveUserDataAfterEdit = async () => {
-        try {
-            let userId = auth.currentUser.uid;
-            let userSaved = await fireDB.collection("users").doc(userId).update({
-                // ...userData,
-                name: data.name,
-                contactNumber: data.contactNumber,
-            });
-            console.log("User saved:: ", userSaved);
-        } catch (error) {
-            console.log('error: ', error);
-        }
-    }
 
-    const handleOldPassword = (val) => {
+    const updateOldSecureTextEntry = () => {
         setData({
             ...data,
-            oldPassword: val,
-        })
+            secureOldTextEntry: !data.secureOldTextEntry
+        });
+    }
+
+    const updateSecureTextEntry = () => {
+        setData({
+            ...data,
+            secureNewPasswordEntry: !data.secureNewPasswordEntry
+        });
+    }
+
+    const updateConfirmSecureTextEntry = () => {
+        setData({
+            ...data,
+            secureConfirmPasswordEntry: !data.secureConfirmPasswordEntry
+        });
+    }
+
+    const handleOldPasswordChange = (val) => {
+        const pattern2 = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const result2 = pattern2.test(val);
+
+        if (result2) {
+            setData({
+                ...data,
+                oldPassword: val,
+                check_OldPassword: true
+            });
+        } else {
+            setData({
+                ...data,
+                oldPassword: val
+            });
+        }
     }
 
     const handlePasswordChange = (val) => {
@@ -81,38 +90,45 @@ const ChangePasswordScreen = ({ navigation }) => {
 
     }
     const confirmPasswordInputChange = (val) => {
-        if (val.length !== 0) {
-            if (val === data.password) {
-                setData({
-                    ...data,
-                    confirmPassword: val,
-                    check_confirmPasswordInputChange: true
-                });
-            }
-            else {
-                setData({
-                    ...data,
-                    confirmPassword: val,
-                });
-            }
+        const pattern2 = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const result2 = pattern2.test(val);
 
+        if (result2) {
+            setData({
+                ...data,
+                confirmPassword: val,
+                check_confirmPasswordInputChange: true
+            });
+        } else {
+            setData({
+                ...data,
+                confirmPassword: val
+            });
         }
     }
 
-    const validate = () => {
-        try {
-            if ( check_OldPassword) {
-                return true;
+    const changePass = () => {
+        if(data.check_NewPasswordInputChange && data.check_confirmPasswordInputChange){
+            if(data.password === data.confirmPassword){
+                this.reauthenticate(data.oldPassword).then(() => {
+                    var user = auth.currentUser;
+                    user.updatePassword(data.password).then(() => {
+                        console.log("Password Updated!");
+                        Alert.alert('Success', 'Password changed', [{ text: 'OK' }]);
+                    }).catch((error) => {console.log(error);})
+                }).catch((error) => {console.log(error);})
+            }else{
+                Alert.alert('Filure', 'Password and confirm password does not match', [{ text: 'OK' }]);
             }
-            else {
-                Alert.alert('Error', 'Please enter all the details', [{ text: 'OK' }]);
-                return false;
-            }
-
-        } catch (error) {
-            console.log('error: ', error);
-
+        }else{
+            Alert.alert('Filure', 'Invalid Current Password', [{ text: 'OK' }]);
         }
+    }
+
+    reauthenticate = (currentPassword) => {
+        var user  = auth.currentUser;
+        var cred  = auth.EmailAuthProvider.credential(user.email,currentPassword);
+        return user.reauthenticateWithCredential(cred);
     }
 
     useEffect(() => {
@@ -131,53 +147,70 @@ const ChangePasswordScreen = ({ navigation }) => {
                 {/* Current Password */}
                 <Text style={styles.text_footer}>Current Password</Text>
                 <View style={styles.action}>
-                    <FontAwesome
+                    <Feather
                         name="lock"
                         color="#05375a"
                         size={20}
                     />
                     <TextInput
-                        placeholder="Current Password"
+                        placeholder="Your Password"
                         style={styles.textInput}
+                        secureTextEntry={data.secureOldTextEntry ? true : false}
                         autoCapitalize="none"
-                        value={data.name}
-                        onChangeText={(val) => handleOldPassword(val)}
+                    onChangeText={(val) => handleOldPasswordChange(val)}
                     />
-                    {data.check_nameInputChange ?
-                        <Animatable.View
-                            animation="bounceIn">
-                            <Feather
-                                name="check-circle"
-                                color="green"
-                                size={20}/>
-                        </Animatable.View>
-                        : null}
+                    <TouchableOpacity
+                    onPress={updateOldSecureTextEntry}
+                    >
+                        {data.secureOldTextEntry ?
+                  <Feather
+                      name="eye-off"
+                      color="grey"
+                      size={20}
+                  />
+                  :
+                  <Feather
+                      name="eye"
+                      color="grey"
+                      size={20}
+                  />}
+                    </TouchableOpacity>
                 </View>
                 {/* New Password */}
                 <Text style={[styles.text_footer, {
                     marginTop: 15
                 }]}>New Password</Text>
                 <View style={styles.action}>
-                    <FontAwesome
+                    <Feather
                         name="lock"
                         color="#05375a"
-                        size={20}/>
+                        size={20}
+                    />
                     <TextInput
-                        placeholder="New Password"
+                        placeholder="Your Password"
                         style={styles.textInput}
+                        secureTextEntry={data.secureNewPasswordEntry ? true : false}
                         autoCapitalize="none"
-                        keyboardType='email-address'
-                        value={data.email}/>
-                    {data.check_emailInputChange ?
-                        <Animatable.View
-                            animation="bounceIn">
-                            <Feather
-                                name="check-circle"
-                                color="green"
-                                size={20}/>
-                        </Animatable.View>
-                        : null}
+                    onChangeText={(val) => handlePasswordChange(val)}
+                    />
+                    <TouchableOpacity
+                    onPress={updateSecureTextEntry}
+                    >
+                        {data.secureNewPasswordEntry ?
+                  <Feather
+                      name="eye-off"
+                      color="grey"
+                      size={20}
+                  />
+                  :
+                  <Feather
+                      name="eye"
+                      color="grey"
+                      size={20}
+                  />}
+                    </TouchableOpacity>
                 </View>
+
                 {/* Confirm Password */}
                 <Text style={[styles.text_footer, {
                     marginTop: 15
@@ -189,20 +222,28 @@ const ChangePasswordScreen = ({ navigation }) => {
                         size={20}
                     />
                     <TextInput
-                        placeholder="Confirm Password"
+                        placeholder="Your Password"
                         style={styles.textInput}
+                        secureTextEntry={data.secureConfirmPasswordEntry ? true : false}
                         autoCapitalize="none"
-                        value={data.contactNumber}
-                        onChangeText={(val) => handleContactNumberChange(val)}/>
-                    {data.check_contactNumberInputChange ?
-                        <Animatable.View
-                            animation="bounceIn">
-                            <Feather
-                                name="check-circle"
-                                color="green"
-                                size={20}/>
-                        </Animatable.View>
-                        : null}
+                    onChangeText={(val) => confirmPasswordInputChange(val)}
+                    />
+                    <TouchableOpacity
+                    onPress={updateConfirmSecureTextEntry}
+                    >
+                        {data.secureConfirmPasswordEntry ?
+                  <Feather
+                      name="eye-off"
+                      color="grey"
+                      size={20}
+                  />
+                  :
+                  <Feather
+                      name="eye"
+                      color="grey"
+                      size={20}
+                  />}
+                    </TouchableOpacity>
                 </View>
                 {/* Change Password Button */}
                 <View style={styles.button}>
@@ -211,7 +252,7 @@ const ChangePasswordScreen = ({ navigation }) => {
                         style={styles.deleteAccount}
                     >
                         <TouchableOpacity
-                            onPress={signOut}>
+                            onPress={changePass}>
                             <Text style={[styles.textSign, {
                                 color: '#fff'
                             }]}>Change Password</Text>

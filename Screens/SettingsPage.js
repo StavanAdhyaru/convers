@@ -141,6 +141,7 @@ const SettingsPage = ({ navigation }) => {
             let userId = auth.currentUser.uid;
             await fireDB.collection("Users").doc(userId).delete();
             await auth.currentUser.delete();
+            Alert.alert("Success","Account deleted successfully",[{ text: 'OK' }])
             navigateToSignInScreen();
             
         } catch (error) {

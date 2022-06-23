@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { getStorage, ref, uploadBytes } from 'firebase/storage';
 import {
     View,
     Text,
@@ -14,20 +13,22 @@ import {
     Dimensions,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
-import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+// import * as ImagePicker from "react-native-image-picker"
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from "expo-linear-gradient";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
-import { auth, fireDB, fireStorage } from "../firebase";
+import { auth, fireDB, storage } from "../firebase";
+// import storage from '@react-native-firebase/storage';
 const { height } = Dimensions.get("screen");
 const height_logo = height * 0.28;
 
-const UploadProfilePicture = ({navigation}) => {
+const UploadProfilePicture = ({ navigation }) => {
     const currentUser = auth.currentUser
     const dbRef = fireDB.collection("users");
-    const storageRef = fireStorage.ref('images/');
+    // const storageRef = storage().ref(`images/${currentUser.uid}`);
     const [photo, setPhoto] = useState("");
+    const [url, setUrl] = useState("");
     const [data, setData] = useState({
         name: "",
         email: "",
@@ -42,7 +43,6 @@ const UploadProfilePicture = ({navigation}) => {
         secureTextEntry: true,
         securePasswordEntry: true,
     });
-
     const setDefaults = () => {
         setData({
             ...data,
@@ -62,63 +62,71 @@ const UploadProfilePicture = ({navigation}) => {
             securePasswordEntry: true,
         });
     };
-
     const handleChoosePhoto = async () => {
         try {
             console.log("inn handleChoosePhoto function");
             
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
+                base64: true,
                 allowsEditing: true,
                 aspect: [4, 3],
-                quality: 1,
-                storageOptions: {
-                    skipBackup: true,
-                    path: 'images',
-                },
+                quality: 1
               });
           
-              console.log(result);
+            //   console.log(result);
           
             if (!result.cancelled) {  
                 setPhoto(result);
                 
             }
-
-
+            // ImagePicker.launchImageLibrary({
+            //     mediaType: 'photo',
+            //     includeBase64: true,
+            //     maxHeight: 200,
+            //     maxWidth: 200,
+            // },(response) => {
+            //     console.log('response: ', response);
+            // }).then((value) => {
+            //     console.log('value: ', value);
+            // }).catch((error) => {
+            //     console.log('error: ', error);
+            // })
         } catch (error) {
-            console.log("error: ", error);
+            console.log("error2: ", error);
         }
     };
+    const uploadImage = async () => {
+        console.log('photo: ', photo.uri);
+        const response = await fetch(photo.uri)
+        const blob = await response.blob();
+        var ref = storage.ref("images/").child(`${currentUser.uid}`);
+        return ref.put(blob)
+    }
+    
+    const saveImageLinkInUser = async () => {
+        let result = await fireDB.collection("users").doc(`${currentUser.uid}`).update({profileImageUrl: url});
+        console.log('result: ', result);
+    }
+
+    const getImageLink = async () => {
+        let url = await storage.ref("images").child(`${currentUser.uid}`).getDownloadURL();
+        console.log('url: ', url);
+        setUrl(url);
+    }
 
     const handleUploadPhoto = async () => {
         try {
-            let uri = photo.uri;
-            let uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
-            console.log('uploadUri: ', uploadUri);
-            const metadata = {
-                contentType: 'image/jpeg'
-            }
-            storageRef.child(`${currentUser.uid}`).put(uploadUri, metadata).then((snapshot) => {
-                console.log('snapshot: ');
-                navigation.navigate('Home');
-
-            })
-
-            // const storage = getStorage();
-            //     const ref = ref(storage, '/images/');
-
-            //     // convert image to array of bytes
-            //     const image = await fetch(result.uri);
-            //     const bytes = await image.blob();
-
-            //     await uploadBytes(ref, bytes);
+            await uploadImage();
+            await getImageLink();
+            await saveImageLinkInUser();
+            alert("Image uploaded!");
+            navigation.replace("Home");
             
         } catch (error) {
             console.log('error: ', error);
         }
     };
-
     return (
         <View style={styles.container}>
             <Animatable.View animation="fadeInUp" style={styles.footer}>
@@ -144,7 +152,6 @@ const UploadProfilePicture = ({navigation}) => {
         </View>
     );
 };
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -173,7 +180,6 @@ const styles = StyleSheet.create({
         color: "#05375a",
         fontSize: 18,
     },
-
     logo: {
         width: height_logo,
         height: height_logo,
@@ -218,5 +224,4 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
 });
-
 export default UploadProfilePicture;

@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './screens/Login';
 import HomePage from './screens/HomePage';
 import Registration from './screens/registration';
+import ForgotPasswordPage from './screens/ForgotPasswordPage';
 import UploadProfilePicture from './screens/profilePicture';
 const Stack = createNativeStackNavigator();
 
@@ -11,10 +12,12 @@ const App = () => {
   return (
     <NavigationContainer independent={true}>
       <Stack.Navigator initialRouteName="Login">
-      <Stack.Screen options={{ headerShown: false }} name="Register" component={Registration} />
+      
       <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
       <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
+      <Stack.Screen options={{ headerShown: false }} name="Register" component={Registration} />
       <Stack.Screen options={{ headerShown: false }} name="UploadProfilePicture" component={UploadProfilePicture} />
+      <Stack.Screen options={{headerShown: false}} name= "ForgotPassword" component={ForgotPasswordPage}/>
     </Stack.Navigator>
     </NavigationContainer>
   );
