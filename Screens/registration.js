@@ -195,7 +195,7 @@ const Registration = () => {
                         });
                         setDefaults();
                         Alert.alert('Success', 'You are successfully registered', [{ text: 'OK' }]);
-                        navigation.replace("UploadProfilePicture");
+                        navigation.replace("Home");
                     })
                     .catch(error => {
                         console.log(error);
