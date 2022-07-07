@@ -15,8 +15,6 @@ import Chat from './Chat';
 import ChangePasswordScreen from './ChangePassword';
 import Registration from './registration';
 import ForgotPasswordPage from './ForgotPasswordPage';
-import UploadProfilePicture from './profilePicture';
-import UserModel from "../model/Users";
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
@@ -68,10 +66,9 @@ const HomePage = ({ navigation,route }) => {
                 <Stack.Screen options={{headerShown:false}} name="Log" component={Login} />
                 <Stack.Screen options={{headerShown:false}} name="CP" component={ChangePasswordScreen}/>
                 <Stack.Screen options={{headerShown:false}} name="Home" component={HomePage}/>
-                <Stack.Screen initialParams={{currentUserData: currentUserData,currentUserId: currentUserId}} name="Chat" component={Chat}/>
+                <Stack.Screen option={{headerStyle: {height: 70}}} initialParams={{currentUserData: currentUserData,currentUserId: currentUserId}} name="Chat" component={Chat}/>
                 <Stack.Screen options={{headerShown:false}} name="Register" component={Registration}/>
                 <Stack.Screen options={{headerShown:false}} name="ForgotPassword" component={ForgotPasswordPage}/>
-                <Stack.Screen options={{ headerShown: false }} name="UploadProfilePicture" component={UploadProfilePicture} />
             </Stack.Navigator>
         </NavigationContainer>
     );

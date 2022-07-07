@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -5,10 +6,16 @@ import Login from './screens/Login';
 import HomePage from './screens/HomePage';
 import Registration from './screens/registration';
 import ForgotPasswordPage from './screens/ForgotPasswordPage';
-import UploadProfilePicture from './screens/profilePicture';
+import config from './QBConfig';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+
+  // React.useEffect(() => {
+  //   dispatch(appStart(config));
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   return (
     <NavigationContainer independent={true}>
       <Stack.Navigator initialRouteName="Login">
@@ -16,7 +23,6 @@ const App = () => {
       <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
       <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
       <Stack.Screen options={{ headerShown: false }} name="Register" component={Registration} />
-      <Stack.Screen options={{ headerShown: false }} name="UploadProfilePicture" component={UploadProfilePicture} />
       <Stack.Screen options={{headerShown: false}} name= "ForgotPassword" component={ForgotPasswordPage}/>
     </Stack.Navigator>
     </NavigationContainer>

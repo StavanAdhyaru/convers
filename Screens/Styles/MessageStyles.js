@@ -1,4 +1,7 @@
-import styled from 'styled-components/native';
+// import styled from 'styled-components/native';
+import styled from 'styled-components';
+// import { Platform } from 'react-native';
+// let type = { base: (Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif')
 
 export const Container = styled.View`
   flex: 1;
@@ -48,13 +51,13 @@ export const UserInfoText = styled.View`
 export const UserName = styled.Text`
   font-size: 14px;
   font-weight: bold;
-  font-family: 'Lato-Regular';
+  font-family: Helvetica Neue;
 `;
 
 export const PostTime = styled.Text`
   font-size: 12px;
   color: #666;
-  font-family: 'Lato-Regular';
+  font-family: Helvetica Neue;
 `;
 
 export const MessageText = styled.Text`

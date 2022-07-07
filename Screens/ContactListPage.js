@@ -1,4 +1,3 @@
-import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
 import {
     Container,
     Card,
@@ -23,6 +22,11 @@ import {
     Button,
     Dimensions, Image, FlatList, Menu
 } from 'react-native';
+import { getUserDetails, getAllUsers } from '../API/user';
+import { auth } from '../firebase';
+import { useEffect, useState } from 'react';
+import { AsyncStorage } from 'react-native';
+
 const usersList = [
     {
         id: '1',
@@ -67,26 +71,28 @@ const usersList = [
 ];
 
 
-const getRecepeintUserData = async () => {
-    try {
-        console.log("in getUserDataFromDB");
-        let userId = auth.currentUser.uid;
-        console.log(userId);
-        let response = await fireDB.collection('users').doc(userId).get();
-        console.log('userData: ', response.data());
-        let userData = response.data();
-        setData({
-            ...userData
-        })
+// const getRecepeintUserData = async () => {
+//     try {
+//         console.log("in getUserDataFromDB");
+//         let userId = auth.currentUser.uid;
+//         console.log(userId);
+//         let response = await fireDB.collection('users').doc(userId).get();
+//         console.log('userData: ', response.data());
+//         let userData = response.data();
+//         setData({
+//             ...userData
+//         })
 
-    } catch (error) {
-        console.log('error: ', error);
+//     } catch (error) {
+//         console.log('error: ', error);
 
-    }
-}
+//     }
+// }
 
-const ContactListPage = ({ navigation, item }) => {
-
+const ContactListPage = ({navigation, item}) => {
+    const [currentUser, setCurrentUser] = useState(null);
+    const [allUsers, setAllUsers] = useState([]);
+    const currentUserId = auth.currentUser.uid;
     const [dataFromState, setData] = useState(usersList)
 
     const searchName = (input)=> {
@@ -97,8 +103,31 @@ const ContactListPage = ({ navigation, item }) => {
         setData(searchData)
         }
 
-    return (
+    useEffect(() => {
+        readUser();
+        getAllUsersFromDB();
+    },[]);
+    
+    const readUser = async () => {
+        const user = await AsyncStorage.getItem('user');
+        if(user) {
+            console.log('user: ', JSON.parse(user));
+            setCurrentUser(JSON.parse(user));
+        } else {
+            const getUser = await getUserDetails(currentUserId)
+            await AsyncStorage.setItem('user', JSON.stringify(getUser));
+            setCurrentUser(getUser);
+        }
+    }
 
+    const getAllUsersFromDB = async () => {
+        let tempAllUsers = await getAllUsers();
+        let userList = tempAllUsers.filter((element) => element.id != currentUserId);
+        setAllUsers(userList);
+
+    }
+
+    return(
         <Container>
             <View>
                 <TextInput
@@ -110,28 +139,35 @@ const ContactListPage = ({ navigation, item }) => {
                 />
 
             </View>
-            <FlatList
-                data={dataFromState}
-                // keyExtractor={item => item.id}
-                keyExtractor = {(item,index)=>index.toString()}
-                renderItem={({item}) => (
-                    <Card onPress={() => navigation.navigate('Chat', {receipentName: item.userName,receipentProfileImage: item.userImg})}>
-                      <UserInfo>
-                        <UserImgWrapper>
-                          <UserImg source={item.userImg} />
-                        </UserImgWrapper>
+        <FlatList
+            data={allUsers}
+            renderItem={({ item }) => (
+                <Card onPress={() => navigation.navigate('Chat', { 
+                    userId: item.id, 
+                    loggedInUserId: currentUserId, 
+                    name: currentUser.name, 
+                    avatar: currentUser.profileImageUrl, 
+                    receipentName: item.name, 
+                    receipentProfileImage: item.profileImageUrl 
+                    })}>
+                    <UserInfo>
+                        <Image
+                            source={{ uri: item.profileImageUrl }}
+                            style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
+                        />
                         <TextSection>
-                          <UserInfoText>
-                            <UserName>{item.userName}</UserName>
-                            <PostTime>{item.messageTime}</PostTime>
-                          </UserInfoText>
-                          <MessageText>{item.messageText}</MessageText>
+                            <UserInfoText>
+                                <UserName>{item.name}</UserName>
+                                <PostTime>{item.messageTime}</PostTime>
+                            </UserInfoText>
+                            <MessageText>{item.messageText}</MessageText>
                         </TextSection>
-                      </UserInfo>
-                    </Card>
-                  )}
-                />
-              </Container>
+                    </UserInfo>
+                </Card>
+            )}
+            keyExtractor={(item,index)=>index.toString()}
+        />
+    </Container>
     );
 }
 

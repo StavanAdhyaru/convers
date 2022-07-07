@@ -1,4 +1,4 @@
-import { auth, fireDB } from "../firebase";
+import { auth, fireDB, storage } from "../firebase";
 import { useState, useEffect } from 'react';
 import {
     View,
@@ -12,6 +12,7 @@ import {
     Button,
     Dimensions, Image
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -26,6 +27,7 @@ const SettingsPage = ({ navigation }) => {
         confirmPassword: '',
         contactNumber: '',
         address: '',
+        profileImageUrl: '',
         check_nameInputChange: false,
         check_emailInputChange: false,
         check_passwordInputChange: false,
@@ -35,7 +37,11 @@ const SettingsPage = ({ navigation }) => {
         secureTextEntry: true,
         securePasswordEntry: true,
     });
+    const [photo, setPhoto] = useState('');
+    const [url, setUrl] = useState('');
     const [isEditMode, setIsEditMode] = useState(false);
+
+    const currentUser = auth.currentUser;
     const signOut = () => {
         auth.signOut()
             .then(() => {
@@ -62,6 +68,7 @@ const SettingsPage = ({ navigation }) => {
             setData({
                 ...userData
             })
+            setUrl(userData.profileImageUrl);
             
         } catch (error) {
             console.log('error: ', error);
@@ -152,6 +159,94 @@ const SettingsPage = ({ navigation }) => {
     const navigateToSignInScreen = () => {
         navigation.replace("Login");
     }
+
+    const uploadPhoto = (image) => {
+        return new Promise( async (resolve, reject) => {
+            try {
+                // upload
+                console.log('image argument:: ', image.uri);
+                const response = await fetch(image.uri)
+                const blob = await response.blob();
+                var ref = storage.ref("images/").child(`${currentUser.uid}`);
+                console.log("_____________________LOADING...____________________");
+                resolve(ref.put(blob));
+                
+            } catch (error) {
+                console.log('error: ', error);
+                reject(error);
+            }
+        })
+    }
+
+    const getDownloadURL = async () => {
+        try {
+            console.log('old url: ', url);
+            // get download url
+            let tempUrl = await storage.ref("images").child(`${currentUser.uid}`).getDownloadURL();
+            setUrl(tempUrl);
+            console.log('new url: ', tempUrl);
+
+            await updateUserDoc(tempUrl);
+            
+        } catch (error) {
+            console.log('error: ', error);
+            
+        }
+    }
+
+    const updateUserDoc = async (tempUrl) => {
+        try {
+            // update user document
+
+            console.log('updating url: ', tempUrl);
+            let dbResponse = await fireDB.collection("users").doc(`${currentUser.uid}`).update({profileImageUrl: tempUrl});
+            console.log('dbResponse: ', dbResponse);
+            setData({
+                ...data,
+                profileImageUrl: url
+            });
+            
+        } catch (error) {
+            console.log('error: ', error);
+            
+        }
+    }
+
+    const changeProfileImage = async () => {
+        try {
+            setUrl(data.profileImageUrl);
+            console.log('old old fetched from db ::: url: ', data.profileImageUrl);
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                base64: true,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1
+              });
+          
+            if (!result.cancelled) {  
+                console.log('result: ', result.uri);
+                setPhoto(result);
+
+                uploadPhoto(result).then(async () => {
+                    await getDownloadURL();
+                    alert("Image uploaded!")
+                }).catch((error) => {
+                    alert("Could not upload Image.");
+                })
+    
+            }
+
+
+        } catch (error) {
+            console.log('error: ', error);
+            
+        }
+    }
+
+    
+
+
     useEffect( () => {
         console.log("in useEffect");
         getUserDataFromDB();
@@ -161,6 +256,21 @@ const SettingsPage = ({ navigation }) => {
                 <StatusBar backgroundColor='#009387' barStyle="light-content" />
                 <View style={styles.header}>
                     <Text style={styles.text_header}>My account</Text>
+                </View>
+                <View>
+                    <Image
+                        source={{ uri: url }}
+                        style={{ width: 150, height: 150, borderRadius: 100, alignSelf: "center" }}
+                    />
+                    <View style={styles.button}>
+                    <TouchableOpacity 
+                        onPress={changeProfileImage}
+                    >
+                        <Text style={[styles.textSign, {
+                            color: '#ECCC01', padding: 10
+                        }]}>Change profile image</Text>
+                    </TouchableOpacity>
+                    </View>
                 </View>
                 <Animatable.View
                     animation='fadeInUpBig'
@@ -284,7 +394,7 @@ const SettingsPage = ({ navigation }) => {
                     {/* Delete account Button */}
                     <View style={styles.button}>
                         <LinearGradient
-                            colors={['#08d4c4', '#01ab9d']}
+                            colors={['#FF0000', '#FF0000']}
                             style={styles.deleteAccount}
                         >
                             <TouchableOpacity 
@@ -375,7 +485,7 @@ const styles = StyleSheet.create({
     },
     button: {
         alignItems: 'center',
-        marginTop: 25
+        margin: 10
     },
     deleteAccount: {
         width: 340,
@@ -384,6 +494,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 10,
         color: "red"
+    },
+    changeProfileImage: {
+        width: 250,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+        color: "blue"
     },
     textSign: {
         fontSize: 18,
