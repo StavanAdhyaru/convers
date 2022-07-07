@@ -2,10 +2,10 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from './screens/Login';
-import HomePage from './screens/HomePage';
-import Registration from './screens/registration';
-import ForgotPasswordPage from './screens/ForgotPasswordPage';
+import Login from './Screens/Login';
+import HomePage from './Screens/HomePage';
+import Registration from './Screens/registration';
+import ForgotPasswordPage from './Screens/ForgotPasswordPage';
 import config from './QBConfig';
 const Stack = createNativeStackNavigator();
 
