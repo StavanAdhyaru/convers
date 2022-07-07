@@ -259,7 +259,7 @@ const SettingsPage = ({ navigation }) => {
                 </View>
                 <View>
                     <Image
-                        source={{ uri: url }}
+                        source={{ uri: url? url : `${__dirname}/assets/default-user-image.png` }}
                         style={{ width: 150, height: 150, borderRadius: 100, alignSelf: "center" }}
                     />
                     <View style={styles.button}>
