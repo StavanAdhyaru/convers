@@ -1,14 +1,34 @@
-import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Login from './Screens/Login';
+import HomePage from './Screens/HomePage';
+import Registration from './Screens/registration';
+import ForgotPasswordPage from './Screens/ForgotPasswordPage';
+import config from './QBConfig';
+const Stack = createNativeStackNavigator();
 
-export default function App() {
+const App = () => {
+
+  // React.useEffect(() => {
+  //   dispatch(appStart(config));
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer independent={true}>
+      <Stack.Navigator initialRouteName="Login">
+      
+      <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
+      <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
+      <Stack.Screen options={{ headerShown: false }} name="Register" component={Registration} />
+      <Stack.Screen options={{headerShown: false}} name= "ForgotPassword" component={ForgotPasswordPage}/>
+    </Stack.Navigator>
+    </NavigationContainer>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -18,3 +38,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+export default App;
