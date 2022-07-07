@@ -10,6 +10,7 @@ import {
     StatusBar,
     Alert,
     Button,
+    ScrollView,
     Dimensions, Image
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -260,7 +261,7 @@ const SettingsPage = ({ navigation }) => {
                 <View>
                     <Image
                         source={{ uri: url? url : `../assets/default-user-image.png` }}
-                        style={{ width: 150, height: 150, borderRadius: 100, alignSelf: "center" }}
+                        style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
                     />
                     <View style={styles.button}>
                     <TouchableOpacity 
@@ -272,6 +273,7 @@ const SettingsPage = ({ navigation }) => {
                     </TouchableOpacity>
                     </View>
                 </View>
+                <ScrollView>
                 <Animatable.View
                     animation='fadeInUpBig'
                     style={styles.footer}
@@ -424,6 +426,7 @@ const SettingsPage = ({ navigation }) => {
 
                     
                 </Animatable.View>
+                </ScrollView>
             </View>
     );
 }
@@ -435,6 +438,7 @@ const styles = StyleSheet.create({
     header: {
         flex: 1,
         justifyContent: 'flex-end',
+        paddingTop: 50,
         paddingHorizontal: 20,
         paddingBottom: 30,
     },
