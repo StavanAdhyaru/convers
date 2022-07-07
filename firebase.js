@@ -2,6 +2,7 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
 import 'firebase/storage'
+// import 'firebase/messaging';
 
 
 // Your web app's Firebase configuration
@@ -28,5 +29,6 @@ if (firebase.apps.length === 0) {
 const auth = firebase.auth();
 const fireDB = app.firestore();
 const storage = firebase.storage()
+// const messaging = firebase.messaging(app);
 
 export { auth, fireDB, storage };

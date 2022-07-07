@@ -22,6 +22,12 @@ import {
     Button,
     Dimensions, Image, FlatList,Menu
 } from 'react-native';
+import { getUserDetails, getAllUsers } from '../API/user';
+import { auth } from '../firebase';
+import { useEffect, useState } from 'react';
+import { AsyncStorage } from 'react-native';
+
+// const allUsers = getAllUsers();
 const Messages = [
     {
         id: '1',
@@ -66,21 +72,48 @@ const Messages = [
 ];
 
 const ContactListPage = ({navigation}) => {
+    const [currentUser, setCurrentUser] = useState(null);
+    const [allUsers, setAllUsers] = useState([]);
+    const currentUserId = auth.currentUser.uid;
+
+    useEffect(() => {
+        readUser();
+        getAllUsersFromDB();
+    },[]);
+    
+    const readUser = async () => {
+        const user = await AsyncStorage.getItem('user');
+        if(user) {
+            console.log('user: ', JSON.parse(user));
+            setCurrentUser(JSON.parse(user));
+        } else {
+            const getUser = await getUserDetails(currentUserId)
+            await AsyncStorage.setItem('user', JSON.stringify(getUser));
+            setCurrentUser(getUser);
+        }
+    }
+
+    const getAllUsersFromDB = async () => {
+        let tempAllUsers = await getAllUsers();
+        let userList = tempAllUsers.filter((element) => element.id != currentUserId);
+        setAllUsers(userList);
+
+    }
+
     return(
-        
         <Container>
         <FlatList
-            data={Messages}
-            keyExtractor={item => item.id}
+            data={allUsers}
             renderItem={({ item }) => (
-                <Card onPress={() => navigation.navigate('Chat', { userName: item.userName })}>
+                <Card onPress={() => navigation.navigate('Chat', { userId: item.id, loggedInUserId: currentUserId, name: currentUser.name, avatar: currentUser.profileImageUrl })}>
                     <UserInfo>
-                        <UserImgWrapper>
-                            <UserImg source={item.userImg} />
-                        </UserImgWrapper>
+                        <Image
+                            source={{ uri: item.profileImageUrl }}
+                            style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
+                        />
                         <TextSection>
                             <UserInfoText>
-                                <UserName>{item.userName}</UserName>
+                                <UserName>{item.name}</UserName>
                                 <PostTime>{item.messageTime}</PostTime>
                             </UserInfoText>
                             <MessageText>{item.messageText}</MessageText>
@@ -88,6 +121,7 @@ const ContactListPage = ({navigation}) => {
                     </UserInfo>
                 </Card>
             )}
+            keyExtractor={item => item.id}
         />
     </Container>
     );

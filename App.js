@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -5,9 +6,16 @@ import Login from './screens/Login';
 import HomePage from './screens/HomePage';
 import Registration from './screens/registration';
 import ForgotPasswordPage from './screens/ForgotPasswordPage';
+import config from './QBConfig';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+
+  // React.useEffect(() => {
+  //   dispatch(appStart(config));
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   return (
     <NavigationContainer independent={true}>
       <Stack.Navigator initialRouteName="Login">

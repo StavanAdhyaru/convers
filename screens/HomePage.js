@@ -14,12 +14,14 @@ import ChangePasswordScreen from './ChangePassword';
 import Registration from './registration';
 import ForgotPasswordPage from './ForgotPasswordPage';
 
+
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const HomePage = ({ navigation }) => {
+
     return (
         <NavigationContainer independent={true}>
             <Stack.Navigator>
