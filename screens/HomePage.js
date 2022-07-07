@@ -1,9 +1,11 @@
+import { NavigationContainer } from '@react-navigation/native';
 import {View,StyleSheet,Text} from 'react-native';
 
 const HomePage = () => {
     return(
         <View style={styles.container}>
             <Text>HomePage</Text>
+            <button onClick={() => navigation.replace("Chat")}></button>
         </View>
     );
 }

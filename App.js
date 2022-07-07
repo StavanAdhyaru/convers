@@ -14,6 +14,8 @@ const App = () => {
         <Stack.Screen options={{ headerShown: true }} name="Register" component={Registration} />
         <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
         <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
+        <Stack.Screen options={{ headerShown: false }} name="Chat" component={ChatScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   )
