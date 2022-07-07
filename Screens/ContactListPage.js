@@ -1,3 +1,4 @@
+import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
 import {
     Container,
     Card,
@@ -20,9 +21,9 @@ import {
     StatusBar,
     Alert,
     Button,
-    Dimensions, Image, FlatList,Menu
+    Dimensions, Image, FlatList, Menu
 } from 'react-native';
-const Messages = [
+const usersList = [
     {
         id: '1',
         userName: 'Stavan Doe',
@@ -65,31 +66,72 @@ const Messages = [
     },
 ];
 
-const ContactListPage = ({navigation}) => {
-    return(
-        
+
+const getRecepeintUserData = async () => {
+    try {
+        console.log("in getUserDataFromDB");
+        let userId = auth.currentUser.uid;
+        console.log(userId);
+        let response = await fireDB.collection('users').doc(userId).get();
+        console.log('userData: ', response.data());
+        let userData = response.data();
+        setData({
+            ...userData
+        })
+
+    } catch (error) {
+        console.log('error: ', error);
+
+    }
+}
+
+const ContactListPage = ({ navigation, item }) => {
+
+    const [dataFromState, setData] = useState(usersList)
+
+    const searchName = (input)=> {
+        let data = dataFromState;
+        let searchData = data.filter((item) =>{
+          return item.userName.toLowerCase().includes(input.toLowerCase())
+        });
+        setData(searchData)
+        }
+
+    return (
+
         <Container>
-        <FlatList
-            data={Messages}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-                <Card onPress={() => navigation.navigate('Chat', { userName: item.userName })}>
-                    <UserInfo>
+            <View>
+                <TextInput
+                    placeholder="Seach Friend"
+                    onChangeText={(input) => {
+                        searchName(input)
+                    }}
+                    style={{ fontSize: 18 }}
+                />
+
+            </View>
+            <FlatList
+                data={dataFromState}
+                // keyExtractor={item => item.id}
+                keyExtractor = {(item,index)=>index.toString()}
+                renderItem={({item}) => (
+                    <Card onPress={() => navigation.navigate('Chat', {receipentName: item.userName,receipentProfileImage: item.userImg})}>
+                      <UserInfo>
                         <UserImgWrapper>
-                            <UserImg source={item.userImg} />
+                          <UserImg source={item.userImg} />
                         </UserImgWrapper>
                         <TextSection>
-                            <UserInfoText>
-                                <UserName>{item.userName}</UserName>
-                                <PostTime>{item.messageTime}</PostTime>
-                            </UserInfoText>
-                            <MessageText>{item.messageText}</MessageText>
+                          <UserInfoText>
+                            <UserName>{item.userName}</UserName>
+                            <PostTime>{item.messageTime}</PostTime>
+                          </UserInfoText>
+                          <MessageText>{item.messageText}</MessageText>
                         </TextSection>
-                    </UserInfo>
-                </Card>
-            )}
-        />
-    </Container>
+                      </UserInfo>
+                    </Card>
+                  )}
+                />
+              </Container>
     );
 }
 

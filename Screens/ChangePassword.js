@@ -1,4 +1,5 @@
-import { auth, fireDB } from "../firebase";
+import { auth } from "../firebase";
+import firebase from 'firebase/app'
 import { useState, useEffect } from 'react';
 import {
     View,
@@ -110,12 +111,16 @@ const ChangePasswordScreen = ({ navigation }) => {
     const changePass = () => {
         if(data.check_NewPasswordInputChange && data.check_confirmPasswordInputChange){
             if(data.password === data.confirmPassword){
-                this.reauthenticate(data.oldPassword).then(() => {
+                reauthenticate(data.oldPassword).then(() => {
                     var user = auth.currentUser;
                     user.updatePassword(data.password).then(() => {
                         console.log("Password Updated!");
                         Alert.alert('Success', 'Password changed', [{ text: 'OK' }]);
-                    }).catch((error) => {console.log(error);})
+                        navigation.navigate('Home');
+                    }).catch((error) => {
+                        console.log(error);
+                        Alert.alert('Error',"Wrong Current Password",[{ text: 'OK' }]);
+                    })
                 }).catch((error) => {console.log(error);})
             }else{
                 Alert.alert('Filure', 'Password and confirm password does not match', [{ text: 'OK' }]);
@@ -125,9 +130,11 @@ const ChangePasswordScreen = ({ navigation }) => {
         }
     }
 
-    reauthenticate = (currentPassword) => {
+    const reauthenticate = (currentPassword) => {
         var user  = auth.currentUser;
-        var cred  = auth.EmailAuthProvider.credential(user.email,currentPassword);
+        console.log(user.email)
+        console.log(currentPassword)
+        var cred  = firebase.auth.EmailAuthProvider.credential(user.email,currentPassword);
         return user.reauthenticateWithCredential(cred);
     }
 
