@@ -10,13 +10,14 @@ import {
     StatusBar,
     Alert,
     Button,
-    Dimensions, Image
+    Dimensions, Image,ScrollView
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
+
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 const SettingsPage = ({ navigation }) => {
@@ -259,7 +260,7 @@ const SettingsPage = ({ navigation }) => {
                 </View>
                 <View>
                     <Image
-                        source={{ uri: url? url : `${__dirname}/assets/default-user-image.png` }}
+                        source={{ uri: url? url : `../assets/default-user-image.png` }}
                         style={{ width: 150, height: 150, borderRadius: 100, alignSelf: "center" }}
                     />
                     <View style={styles.button}>
@@ -272,6 +273,7 @@ const SettingsPage = ({ navigation }) => {
                     </TouchableOpacity>
                     </View>
                 </View>
+                <ScrollView>
                 <Animatable.View
                     animation='fadeInUpBig'
                     style={styles.footer}
@@ -424,6 +426,7 @@ const SettingsPage = ({ navigation }) => {
 
                     
                 </Animatable.View>
+                </ScrollView>
             </View>
     );
 }
