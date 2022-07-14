@@ -1,5 +1,7 @@
 import { auth, fireDB } from "../firebase";
 import { useState, useEffect } from 'react';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 import {
     StyleSheet,
     Dimensions
@@ -23,6 +25,7 @@ const Stack = createNativeStackNavigator();
 
 
 const HomePage = ({ navigation,route }) => {
+    const [expoPushToken, setExpoPushToken] = useState('');
     const [currentUserData, setData] = useState({
         name: '',
         email: '',
@@ -32,6 +35,7 @@ const HomePage = ({ navigation,route }) => {
     const [currentUserId,setId] = useState('')
     useEffect( () => {
         console.log("in useEffect");
+        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
         getUserDataFromDB();
     }, [])
 
@@ -54,7 +58,44 @@ const HomePage = ({ navigation,route }) => {
         } catch (error) {
             console.log('error: ', error);
         }
-    } 
+    }
+
+    const registerForPushNotificationsAsync = async () => {
+        let token;
+        if (Device.isDevice) {
+          // check for existing permissions
+          const { status: existingStatus } = await Notifications.getPermissionsAsync();
+          let finalStatus = existingStatus;
+          // if no existing permission , ask user for permission
+          if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+          }
+          // if no permission , exit the function
+          if (finalStatus !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+          }
+      
+          // get push notification token
+          token = (await Notifications.getExpoPushTokenAsync()).data;
+          console.log(token);
+          
+        } else {
+          alert('Must use physical device for Push Notifications');
+        }
+      
+        if (Platform.OS === 'android') {
+          Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+        }
+      
+        return token;
+      }
    
     return (
         <NavigationContainer independent={true}>

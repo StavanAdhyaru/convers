@@ -6,6 +6,7 @@ import Login from './Screens/Login';
 import HomePage from './Screens/HomePage';
 import Registration from './Screens/registration';
 import ForgotPasswordPage from './Screens/ForgotPasswordPage';
+import Notification from './Screens/Notification';
 import config from './QBConfig';
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const App = () => {
       <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
       <Stack.Screen options={{ headerShown: false }} name="Register" component={Registration} />
       <Stack.Screen options={{headerShown: false}} name= "ForgotPassword" component={ForgotPasswordPage}/>
+      <Stack.Screen options={{headerShown: false}} name= "Notification" component={Notification}/>
     </Stack.Navigator>
     </NavigationContainer>
   );
