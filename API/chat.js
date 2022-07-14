@@ -3,15 +3,21 @@ import { auth, fireDB, storage } from '../firebase';
 const chatDBRef = fireDB.collection('chats');
 
 const storeChat = (chatId, message, loggedInUserId) => {
+    console.log('chatId: ', chatId);
     console.log('message: ', message);
     return new Promise(async (resolve, reject) => {
         try {
-            let result = chatDBRef.doc(chatId).collection('chatData').add({
+            if(!chatId) {
+                let result = await chatDBRef.add({});
+                let newChatId = result.path.split('/')[1];
+                chatId = newChatId;
+            }
+            let result = await chatDBRef.doc(chatId).collection('chatData').add({
                 userId: loggedInUserId,
                 text: message.text,
                 createdAt: message.createdAt
             })
-            resolve(result);
+            resolve(chatId);
             
         } catch (error) {
             reject(error);
@@ -40,6 +46,19 @@ const getChat = (chatId) => {
         }
     })
 }
+
+// const createChat = () => {
+//     return new Promise((resolve, reject) => {
+//         try {
+//             let newChat = chatDBRef.add({});
+//             console.log('newChat: ', newChat);
+            
+//         } catch (error) {
+//             reject(error);
+            
+//         }
+//     })
+// }
 
 
 
