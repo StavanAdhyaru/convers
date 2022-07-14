@@ -191,7 +191,8 @@ const Registration = () => {
                         dbRef.doc(user.uid).set({
                             name: data.name,
                             email: data.email,
-                            contactNumber: data.contactNumber
+                            contactNumber: data.contactNumber,
+                            chatIds: []
                         });
                         setDefaults();
                         Alert.alert('Success', 'You are successfully registered', [{ text: 'OK' }]);

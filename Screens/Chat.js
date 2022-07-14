@@ -9,8 +9,8 @@ import { GiftedChat } from 'react-native-gifted-chat';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { getChat, storeChat } from '../API/chat';
-import { getUserDetails } from '../API/user';
+import { createChat, getChat, storeChat } from '../API/chat';
+import { getUserDetails, addChatId, getChatId } from '../API/user';
 import { auth } from '../firebase';
 
 const Chat = ({ navigation, route }) => {
@@ -69,16 +69,18 @@ const Chat = ({ navigation, route }) => {
     const getMessages = async () => {
 
         let loggedInUser = await getUserDetails(loggedInUserId);
-        console.log('loggedInUser: ', loggedInUser);
+        // console.log('loggedInUser: ', loggedInUser);
         setLoggedInUser(loggedInUser);
-        let loggedInUserChats = loggedInUser.chatIds;
+        // let loggedInUserChats = loggedInUser.chatIds;
+        // console.log('loggedInUserChats: ', loggedInUserChats);
 
         let otherUser = await getUserDetails(userId);
-        let otherUserChats = otherUser.chatIds;
+        // let otherUserChats = otherUser.chatIds;
+        // console.log('otherUserChats: ', otherUserChats);
 
-        let chatId = loggedInUserChats.filter(value => otherUserChats.includes(value))[0];
+        let chatId = await getChatId(loggedInUserId, userId);
         console.log('chatId: ', chatId);
-        setChatId(chatId)
+        setChatId(chatId);
 
         let allMessages = await getChat(chatId);
         console.log('allMessages: ', allMessages);
@@ -148,7 +150,14 @@ const Chat = ({ navigation, route }) => {
           getData();
         
         console.log('messages: ', messages);
-        let result = await storeChat(chatId, messages[0], loggedInUserId);
+        
+        let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
+        setChatId(newChatId);
+        
+        if(!chatId) {
+            // store new chat id in both users location
+            addChatId(userId, loggedInUserId, newChatId);
+        }
         setMessagesAfterSend(messages);
     }, []);
 
