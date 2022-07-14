@@ -3,15 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image, TextI
 import {
     UserImgWrapper, UserImg
 } from './Styles/MessageStyles';
-import { Avatar } from 'react-native-elements';
-import { signOut } from 'firebase/auth';
 import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createChat, getChat, storeChat } from '../API/chat';
 import { getUserDetails, addChatId, getChatId } from '../API/user';
-import { auth } from '../firebase';
+import { auth,fireDB } from '../firebase';
 import { BackgroundImage } from 'react-native-elements/dist/config';
 import { IconButton } from 'react-native-paper';
 // import { Actions } from 'react-native-router-flux';
@@ -46,6 +44,15 @@ const Chat = ({ navigation, route }) => {
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
     const currentUserData = route.params.currentUserData;
     const image = { uri: "https://reactjs.org/logo-og.png" };
+    const [receipentData,setReceipentData] = useState({
+        name: '',
+        email: '',
+        contactNumber: '',
+        profileImageUrl: '',
+        status: true
+    });
+
+
 
     function InputBox() {
         return (
@@ -90,7 +97,23 @@ const Chat = ({ navigation, route }) => {
 
     useEffect(() => {
         getMessages();
+        getRecepientDataFromDb();
+       
+        
     }, []);
+
+    const getRecepientDataFromDb = async () => {
+        try{
+            let response = await fireDB.collection('users').doc(userId).get();
+            console.log('userData: ', response.data());
+            let userData = response.data();
+            setReceipentData({
+                ...userData
+            })
+        }catch(error){
+            console.log(error);
+        }
+    }
 
     //view profile and view profile photo in 3 dots, showimage mein true /false as boolean; kill gap between message and border and keep different colors for sender and receiver texts, clear chat
     // 009387
@@ -117,8 +140,14 @@ const Chat = ({ navigation, route }) => {
                     justifyContent: 'space-between',
                     marginRight: 10,
 
-                }}>
-                    <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}>availability</Text>
+                }}>{
+
+                }
+                    {receipentData.status ? 
+                        
+                        <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}>Online</Text> :
+                        <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}></Text>
+                        }
 
                     <TouchableOpacity onPress={testpress}>
                         <MaterialCommunityIcons style={{ marginTop: 5 }} name="dots-vertical" size={36} color={'white'} />
