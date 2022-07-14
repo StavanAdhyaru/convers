@@ -1,5 +1,5 @@
-// import styled from 'styled-components/native';
-import styled from 'styled-components';
+import styled from 'styled-components/native';
+// import styled from 'styled-components';
 // import { Platform } from 'react-native';
 // let type = { base: (Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif')
 
