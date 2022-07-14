@@ -22,7 +22,13 @@ const height_logo = height * 0.28;
 
 const Login = ({ navigation }) => {
 
+
+
     useEffect(() => {
+
+        
+
+
         const unsubscribe = auth.onAuthStateChanged(user => {
             if (user) {
                 navigation.replace("Home")

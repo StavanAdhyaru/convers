@@ -1,8 +1,8 @@
 import { auth, fireDB } from "../firebase";
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef } from 'react';
 import {
     StyleSheet,
-    Dimensions
+    Dimensions,AppState
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -15,6 +15,9 @@ import Chat from './Chat';
 import ChangePasswordScreen from './ChangePassword';
 import Registration from './registration';
 import ForgotPasswordPage from './ForgotPasswordPage';
+import {setUserStatus,getSingleUserData,getMultipleChats} from '../API/user'
+import { UserImg } from "./Styles/MessageStyles";
+import {getContactslist} from "../API/contacts";
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
@@ -23,16 +26,47 @@ const Stack = createNativeStackNavigator();
 
 
 const HomePage = ({ navigation,route }) => {
+
+    const appState = useRef(AppState.currentState);
+    const [appStateVisible, setAppStateVisible] = useState(appState.current);
+    const [contacts, setContacts] = useState([]);
+
     const [currentUserData, setData] = useState({
         name: '',
         email: '',
         contactNumber: '',
-        profileImageUrl: ''
+        profileImageUrl: '',
+        status: true
     });
     const [currentUserId,setId] = useState('')
-    useEffect( () => {
+    useEffect( async () => {
         console.log("in useEffect");
+        getContactslist();
         getUserDataFromDB();
+        const chatIdWithUserId = await getMultipleChats();
+        const subscription = AppState.addEventListener("change", nextAppState => {
+            if (
+              appState.current.match(/inactive|background/) &&
+              nextAppState === "active"
+            ) {
+              console.log("App has come to the foreground!");
+            }
+      
+            appState.current = nextAppState;
+            setAppStateVisible(appState.current);
+            console.log("AppState", appState.current);
+            
+            if(appState.current == "active"){
+                setUserStatus(currentUserId,currentUserData,true)
+            }else{
+                setUserStatus(currentUserId,currentUserData,false)
+            }
+
+          });
+
+          
+
+        
     }, [])
 
 
@@ -97,8 +131,10 @@ const TabStackNavigator = () => {
                 tabBarActiveTintColor: '#009387',
                 tabBarInactiveTintColor: 'gray',
             })}>
-            <Tab.Screen  options={{title:'Chats', headerTintColor:'#009387'}} name="ContactListPage" component={ContactListPage} />
-            <Tab.Screen  options={{headerShown:false, title:'Settings'}} name="SettingsPage" component={SettingsPage} />
+            <Tab.Screen  options={{title:'Chats', headerTintColor:'#009387',headerBackButtonMenuEnabled:true}} name="ContactListPage" component={ContactListPage} />
+            <Tab.Screen  options={{headerShown:false, title:'Settings',headerBackButtonMenuEnabled:true,topBar:{
+                backButton:{},
+            }}} name="SettingsPage" component={SettingsPage} />
         </Tab.Navigator>
     );
 }

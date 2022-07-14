@@ -31,6 +31,8 @@ import DropDownPicker from 'react-native-dropdown-picker';
 
 
 
+import { encryption,decryption } from '../API/AES';
+// import { HeaderBackButton } from 'react-navigation';
 
 const Chat = ({ navigation, route }) => {
     const { userId, name, avatar } = route.params;
@@ -162,7 +164,13 @@ const Chat = ({ navigation, route }) => {
         console.log('result: ', result);
         console.log('allMessages: ', allMessages);
 
+        
+        
         setMessages(allMessages);
+
+
+
+
     }
 
     const readUser = async () => {
@@ -173,7 +181,6 @@ const Chat = ({ navigation, route }) => {
 
     const setMessagesAfterSend = (messages) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-
     }
 
     const onSend = useCallback(async (messages = []) => {
