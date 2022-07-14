@@ -25,7 +25,8 @@ import {
 import { getUserDetails, getAllUsers } from '../API/user';
 import { auth } from '../firebase';
 import { useEffect, useState } from 'react';
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const usersList = [
     {
