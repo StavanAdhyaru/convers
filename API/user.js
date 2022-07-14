@@ -69,4 +69,15 @@ const getChatId = (loggedInUserId, userId) => {
     })
 }
 
+const addPushNotificationToken = (userId, token) => {
+    return new Promise((resolve, reject) => {
+        try {
+            
+            
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export{ getUserDetails, getAllUsers, addChatId, getChatId }
