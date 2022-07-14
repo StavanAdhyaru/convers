@@ -12,6 +12,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getChat, storeChat } from '../API/chat';
 import { getUserDetails } from '../API/user';
 import { auth } from '../firebase';
+import { encryption,decryption } from '../API/AES';
+// import { HeaderBackButton } from 'react-navigation';
 
 const Chat = ({ navigation, route }) => {
     const { userId, name, avatar } = route.params;
@@ -48,6 +50,8 @@ const Chat = ({ navigation, route }) => {
             title: receipentName,
             headerLeft: () => (
                 <View style={{ marginLeft: 20 }}>
+                    {/* <HeaderBackButton onPress={()=>{navigation.navigate('Home')}}/> */}
+
                     <UserImgWrapper>
                     <UserImg source={{
                         uri: receipentProfileImage,
@@ -104,7 +108,13 @@ const Chat = ({ navigation, route }) => {
         console.log('result: ', result);
         console.log('allMessages: ', allMessages);
 
+        
+        
         setMessages(allMessages);
+
+
+
+
     }
 
     const readUser = async () => {
@@ -115,7 +125,6 @@ const Chat = ({ navigation, route }) => {
 
     const setMessagesAfterSend = (messages) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-
     }
 
     const onSend = useCallback(async (messages = []) => {
