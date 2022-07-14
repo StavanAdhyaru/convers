@@ -31,6 +31,9 @@ const HomePage = ({ navigation,route }) => {
     const [appStateVisible, setAppStateVisible] = useState(appState.current);
     const [contacts, setContacts] = useState([]);
 
+
+
+
     const [currentUserData, setData] = useState({
         name: '',
         email: '',
@@ -50,6 +53,7 @@ const HomePage = ({ navigation,route }) => {
               nextAppState === "active"
             ) {
               console.log("App has come to the foreground!");
+              setUserStatus
             }
       
             appState.current = nextAppState;
@@ -57,6 +61,7 @@ const HomePage = ({ navigation,route }) => {
             console.log("AppState", appState.current);
             
             if(appState.current == "active"){
+                console.log("Here for updating userStatus")
                 setUserStatus(currentUserId,currentUserData,true)
             }else{
                 setUserStatus(currentUserId,currentUserData,false)
