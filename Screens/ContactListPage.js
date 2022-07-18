@@ -92,6 +92,7 @@ const usersList = [
 const ContactListPage = ({navigation, item}) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
+    const [allUsersBackup, setAllUsersBackup] = useState([]);
     const currentUserId = auth.currentUser.uid;
     const [dataFromState, setData] = useState(usersList)
 
@@ -124,6 +125,7 @@ const ContactListPage = ({navigation, item}) => {
         let tempAllUsers = await getAllUsers();
         let userList = tempAllUsers.filter((element) => element.id != currentUserId);
         setAllUsers(userList);
+        setAllUsersBackup(userList);
 
     }
 
