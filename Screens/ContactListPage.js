@@ -26,6 +26,7 @@ import { getUserDetails, getAllUsers } from '../API/user';
 import { auth } from '../firebase';
 import { useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
+import SearchIcon from '@material-ui/icons/Search';
 
 const usersList = [
     {
@@ -132,8 +133,10 @@ const ContactListPage = ({navigation, item}) => {
     return(
         <Container>
             <View>
+            
+                {/* SearchIcon = <SearchIcon/> */}
                 <TextInput
-                    placeholder="Seach Friend"
+                    placeholder="Search Friend"
                     onChangeText={(input) => {
                         searchName(input)
                     }}
