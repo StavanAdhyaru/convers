@@ -10,6 +10,7 @@ import {
     MessageText,
     TextSection,
 } from './Styles/MessageStyles';
+import { Animated } from 'react-native';
 import {
     View,
     Text,
@@ -17,6 +18,7 @@ import {
     TextInput,
     Platform,
     StyleSheet,
+    Pressable,
     StatusBar,
     Alert,
     Button,
@@ -26,7 +28,8 @@ import { getUserDetails, getAllUsers } from '../API/user';
 import { auth } from '../firebase';
 import { useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
-import SearchIcon from '@material-ui/icons/Search';
+// import Icon from 'react-native-ico-material-design';
+import Feather from 'react-native-vector-icons/Feather';
 
 const usersList = [
     {
@@ -132,18 +135,40 @@ const ContactListPage = ({navigation, item}) => {
 
     return(
         <Container>
-            <View>
+            <View style={styles.itemsearch}>
+            
+                <Feather style = {styles.searchIcon}
+                      name="search"
+                      color="#009387"
+                      size={20}
+                  />
+                
+            
             
                 {/* SearchIcon = <SearchIcon/> */}
-                <TextInput
+                <TextInput style = {styles.searchText}
                     placeholder="Search Friend"
+                    placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)
                     }}
-                    style={{ fontSize: 18 }}
+                   // style={{ fontSize: 18 }}
                 />
+                    <Feather style = {styles.groupIcon}
+                      name="users"
+                      color="#009387"
+                      size={20}
+                      alignItems = ""
+                  />
+                  <Feather style = {styles.plus}
+                      name="plus-circle"
+                      color="#009387"
+                      size={20}
+                      alignItems = ""
+                  />
 
             </View>
+            
         <FlatList
             data={allUsers}
             renderItem={({ item }) => (
@@ -197,7 +222,35 @@ const styles = StyleSheet.create({
     textSign: {
         fontSize: 18,
         fontWeight: 'bold'
+    },
+    itemsearch: {
+        padding: 16,
+        borderRadius: 16,
+        flexDirection: 'row',
+    },
+    groupIcon:{
+        marginLeft:80
+        
+    },
+    searchIcon: {
+        marginRight: 10
+    },
+    plus:{
+        marginLeft:20
+    },
+    searchText: {
+        marginLeft:10
     }
 });
 
 export default ContactListPage;
+
+
+
+
+
+
+
+
+
+
