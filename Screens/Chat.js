@@ -411,7 +411,7 @@ return result;
         }
 
         
-        setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+        // setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
 
         console.log('messages: ', messages);   
 
