@@ -11,11 +11,14 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createChat, getChat, storeChat } from '../API/chat';
 import { getUserDetails, addChatId, getChatId } from '../API/user';
-import { auth } from '../firebase';
+import { auth, fireDB, storage } from '../firebase';
 import { BackgroundImage } from 'react-native-elements/dist/config';
 import { IconButton } from 'react-native-paper';
 // import { Actions } from 'react-native-router-flux';
-import ImagePicker from 'react-native-image-picker';
+// import ImagePicker from 'react-native-image-picker';
+import * as ImagePicker from 'expo-image-picker';
+
+
 import {
     MaterialCommunityIcons,
     MaterialIcons,
@@ -35,9 +38,48 @@ import { encryption,decryption } from '../API/AES';
 // import { HeaderBackButton } from 'react-navigation';
 
 const Chat = ({ navigation, route }) => {
+    const currentUser = auth.currentUser;
+
     const { userId, name, avatar } = route.params;
     const loggedInUserId = auth.currentUser.uid;
     const [messages, setMessages] = useState([]);
+    const [photo, setPhoto] = useState('');
+    const [url, setUrl] = useState('');
+
+    const [data, setData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        contactNumber: '',
+        address: '',
+        profileImageUrl: '',
+        check_nameInputChange: false,
+        check_emailInputChange: false,
+        check_passwordInputChange: false,
+        check_confirmPasswordInputChange: false,
+        check_contactNumberInputChange: false,
+        check_addressInputChange: false,
+        secureTextEntry: true,
+        securePasswordEntry: true,
+    });
+
+    const randGen = () => {
+
+        var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+var result = ""
+var charactersLength = characters.length;
+
+for ( var i = 0; i < 5 ; i++ ) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+}
+
+return result;
+
+    }
+    
+
+
     const [user, setUser] = useState(null);
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [chatId, setChatId] = useState(null);
@@ -46,7 +88,106 @@ const Chat = ({ navigation, route }) => {
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
     const currentUserData = route.params.currentUserData;
     const image = { uri: "https://reactjs.org/logo-og.png" };
+    const [tempimpurl, settempimpurl] = useState("");
+    const [boolvar, setboolvar] = useState(false);
 
+    
+    const getDownloadURL = async (randVar) => {
+        try {
+
+            // ("images/sharePhotos/").child(`${chatId}`)
+
+            let tempUrl = await storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`).getDownloadURL().then(() => {
+
+                settempimpurl(tempUrl);
+
+
+            });
+
+
+            setboolvar(true);
+            console.log(' retrieved url of image message : ', tempUrl);
+            console.log('type of url:  ', typeof(tempUrl));
+            console.log('value of url variable is:', url);
+
+            storeChat(chatId, messages, loggedInUserId);
+            console.log('stored/sent messages are:  ',messages);
+
+            
+            
+        } catch (error) {
+            console.log('error in getDownloadURL function : ', error);
+            
+        }
+    }
+
+     
+        
+        const uploadPhoto = (image, randVar) => {
+        return new Promise( async (resolve, reject) => {
+            try {
+                console.log('image argument:: ', image.uri);
+                const response = await fetch(image.uri)
+                const blob = await response.blob();
+
+
+                var ref = storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`);
+                console.log("_____________________LOADING...____________________");
+                resolve(ref.put(blob));
+
+                
+                
+            } catch (error) {
+                console.log('error: ', error);
+                reject(error);
+            }
+        })
+    }
+
+    //images/sharePhotos/chatId/image
+
+    const sendPhoto = async () => {
+        try {
+            
+            let imgURI = null;
+
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                base64: true,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1
+              });
+          
+            if (!result.cancelled) {  
+                console.log('result (image uri): ', result.uri);
+                imgURI=result.uri;
+                setPhoto(result);
+
+                let randVarInSendPhoto = randGen();
+
+                uploadPhoto(result,randVarInSendPhoto).then(async () => {
+                    console.log('await getDownloadURL  started ');
+                    await getDownloadURL(randVarInSendPhoto);
+                    console.log('getDownloadURL finished');
+                    alert("Image uploaded!")
+                    console.log('image uploaded');
+                }).catch((error) => {
+                    alert("Could not upload Image.");
+                    console.log('error in uploading: ', error);
+
+                })
+    
+            }
+
+
+        } catch (error) {
+            console.log('error: ', error);
+            
+        }
+    }
+
+    
     function InputBox() {
         return (
             <View style={styles.inputcontainer}>
@@ -58,14 +199,20 @@ const Chat = ({ navigation, route }) => {
         );
     }
 
+    
+
     function testpress() {
         console.log("dots pressed");
+        
         return (
             <View>
-                <Picker style={{ height: 20, width: 150 }}>
+                <Picker style={{ height: 20, width: 150 }} mode={DropDownPicker}>
                     <Picker.Item label='View profile' > </Picker.Item>
                     <Picker.Item label='Delete chat '> </Picker.Item>
                 </Picker>
+
+                
+
             </View>
 
         );
@@ -74,11 +221,16 @@ const Chat = ({ navigation, route }) => {
 
     function renderSend(props) {
         return (
-            <Send {...props}>
-                <View style={styles.sendingContainer}>
-                    <IconButton icon="send-circle" size={32} color="#009387" />
-                </View>
-            </Send>
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: 60 }}>
+      <Icon name="camera"  size={32} style={{ marginHorizontal: 5 }} onPress={sendPhoto} />
+      <Send {...props}>
+        <View style={styles.btnSend2}>
+        <IconButton icon="send-circle" size={32} color="#009387" />
+
+          {/* <Icon name="ios-send" size={24} color='#6646ee' /> */}
+        </View>
+      </Send>
+    </View>
         );
     }
 
@@ -92,9 +244,10 @@ const Chat = ({ navigation, route }) => {
         getMessages();
     }, []);
 
-    //view profile and view profile photo in 3 dots, showimage mein true /false as boolean; kill gap between message and border and keep different colors for sender and receiver texts, clear chat
-    // 009387
+    
     useLayoutEffect(() => {
+        getMessages();
+
         console.log('receipentName: ', receipentName);
         navigation.setOptions({
             title: receipentName,
@@ -139,6 +292,8 @@ const Chat = ({ navigation, route }) => {
         let chatId = await getChatId(loggedInUserId, userId);
         console.log('chatId: ', chatId);
         setChatId(chatId);
+        console.log('chatId: ', chatId);
+
 
         let allMessages = await getChat(chatId);
         console.log('allMessages: ', allMessages);
@@ -168,12 +323,10 @@ const Chat = ({ navigation, route }) => {
         
         setMessages(allMessages);
 
+        }
 
-
-
-    }
-
-    const readUser = async () => {
+    
+        const readUser = async () => {
         let user = await getUserDetails(userId);
         console.log('user: ', user);
         setUser(user);
@@ -185,36 +338,23 @@ const Chat = ({ navigation, route }) => {
 
     const onSend = useCallback(async (messages = []) => {
 
-        // setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+        console.log('onsend called');
+        console.log('value of image url variable tempimpurl is:  ', tempimpurl);
+        console.log('value of boolean variable boolvar is:  ', boolvar);
 
-        arr.push(messages);
-        for (let i = 0; i < arr.length; i++) {
-            // console.log("element" + i + "=" + arr[i].Text);
-            console.log(JSON.stringify(arr[i])._id);
-            console.log(JSON.stringify(arr[i], null, 4));
-        }
-        const saveData = async () => {
-            try {
-                await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(arr))
-            } catch (e) {
-                alert('Failed to save the data to the storage')
-            }
+        if (boolvar == true)
+        {
+            setMessages(tempimpurl);
+
+            boolvar = false;
         }
 
-        saveData();
+        
 
-        const getData = async () => {
-            try {
-                const jsonValue = await AsyncStorage.getItem(STORAGE_KEY)
-                return jsonValue != null ? console.log(" retrieved value:" + JSON.parse(jsonValue)[1].user) : null;
-            } catch (e) {
-                // error reading value
-            }
-        }
+        
+        setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
 
-        getData();
-
-        console.log('messages: ', messages);
+        console.log('messages: ', messages);   
 
         let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
         setChatId(newChatId);
@@ -251,69 +391,35 @@ const Chat = ({ navigation, route }) => {
 
     return (
         <ImageBackground
-            source={{ uri: 'https://res.cloudinary.com/practicaldev/image/fetch/s--WAKqnINn--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://thepracticaldev.s3.amazonaws.com/i/tw0nawnvo0zpgm5nx4fp.png' }}
+            source={require('../assets/wapp_background.jpeg')}
             style={{ flex: 1 }}
         >
             <GiftedChat
 
 
-                // scrollToBottomComponent={scrollToBottomComponent}
-                // renderActions={renderActions}
                 scrollToBottom
                 scrollToBottomComponent={scrollToBottomComponent}
 
 
                 renderBubble={renderBubblefunc}
 
-                // renderBubble={(props)=>{
-                //         return <Bubble
-                //         {...props}
-                //         wrapperStyle={{
-                //           right: {
-                //             backgroundColor:"green",
-
-                //           }
-
-                //         }}
-                //       />
-                //     }}
+                
 
                 sendingContainer={InputBox}
-                messagesContainerStyle={InputBox}
 
 
                 onSend={messages => onSend(messages)}
                 alwaysShowSend
-                // textInputStyle={styles.composer}
-                textInputStyle={InputBox}
                 minComposerHeight={40}
                 minInputToolbarHeight={60}
                 messages={messages}
                 showAvatarForEveryMessage={false}
-                // renderSend={(props) => (
-                //     <View style={{ flexDirection: 'row', alignItems: 'center', height: 60 }}>
-                //     {/* //   <BtnRound icon="camera" iconColor={Colors.red} size={40} style={{ marginHorizontal: 5 }} onPress={() => this.choosePicture()} /> */}
-
-                //       <Send >
-                //         <View style={styles.btnSend}>
-                //           {/* <Ionicons name="ios-send" size={24} color="red" /> */}
-                //           <Ionicons name="albums" size={40} color="red" />
-
-                //         </View>
-                //       </Send>
-
-
-
-
-                //     </View>
-
-
-
-                //   )}
+                
 
                 renderSend={renderSend}
 
-                // onSend={messages => onSend(messages)}
+
+
                 user={{
                     _id: loggedInUserId,
                     name: name,
@@ -380,6 +486,16 @@ const styles = StyleSheet.create({
         flex: 1,
         marginHorizontal: 10
     },
+
+    btnSend2: {
+        height: 40,
+        width: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+        
+        borderRadius: 50
+      }
 
 
 });

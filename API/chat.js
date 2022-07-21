@@ -5,6 +5,7 @@ const chatDBRef = fireDB.collection('chats');
 const storeChat = (chatId, message, loggedInUserId) => {
     console.log('chatId: ', chatId);
     console.log('message: ', message);
+    console.log('loggedInUserId', loggedInUserId);
     return new Promise(async (resolve, reject) => {
         try {
             if(!chatId) {
@@ -15,6 +16,7 @@ const storeChat = (chatId, message, loggedInUserId) => {
             let result = await chatDBRef.doc(chatId).collection('chatData').add({
                 userId: loggedInUserId,
                 text: message.text,
+                image: message,
                 createdAt: message.createdAt
             })
             resolve(chatId);
