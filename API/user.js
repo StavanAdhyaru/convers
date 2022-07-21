@@ -49,32 +49,17 @@ const getAllUsers = async (currentUserid) => {
     return new Promise((resolve, reject) => {
         try {
             let userData = [];
-            // userDBRef.doc(currentUserid).collection("chatIdList").get().then((snapshot) => {
-            //     snapshot.forEach(async (doc) => {
-            //         eachUser = doc.data();
-            //         eachUser.id = doc.id;
-            //         eachUser.userData =  getUserDetails(doc.id);
-            //         eachUser.chatData =  getChat(eachUser.chatId);
-            //         userData.push(eachUser);
-            //     })
-            //     resolve(userData);
-            // }).catch((error) => {
-            //     reject(error);
-            // })  
-            
             userDBRef.doc(currentUserid).collection("chatIdList").onSnapshot((querySnapshot) => {
                 const eachUserConnected = querySnapshot.docChanges().map(async ({doc}) => {
                     const eachUser = doc.data();
                     eachUser.id = doc.id;
                     eachUser.userData = await getUserDetails(doc.id);
                     eachUser.chatData = await getChat(eachUser.chatId);
-                    // console.log("each User",eachUser);
                     userData.push(eachUser);
                 })
                 console.log(userData);
                 resolve(userData);
-                // return userData;
-            // })
+                
             }).catch((error) => {
                 reject(error);
             })

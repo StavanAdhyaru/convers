@@ -10,6 +10,7 @@ import {
     MessageText,
     TextSection,
 } from './Styles/MessageStyles';
+import { Animated } from 'react-native';
 import {
     View,
     Text,
@@ -17,6 +18,7 @@ import {
     TextInput,
     Platform,
     StyleSheet,
+    Pressable,
     StatusBar,
     Alert,
     Button,
@@ -25,8 +27,9 @@ import {
 import { getUserDetails, getAllUsers } from '../API/user';
 import { auth, fireDB } from '../firebase';
 import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getChat } from '../API/chat';
+// import Icon from 'react-native-ico-material-design';
+import Feather from 'react-native-vector-icons/Feather';
 
 
 
@@ -35,6 +38,7 @@ const ContactListPage = ({navigation, item}) => {
     const [allUsers, setAllUsers] = useState([]);
     const [searchBoolean,setBoolean] = useState(true);
     const [searchData,setSearchData] = useState([]);
+    const [allUsersBackup, setAllUsersBackup] = useState([]);
     const currentUserId = auth.currentUser.uid;
     let userData = [];
 
@@ -90,20 +94,49 @@ const ContactListPage = ({navigation, item}) => {
         })
         
         
+        // let tempAllUsers = await getAllUsers();
+        // // let userList = tempAllUsers.filter((element) => element.id != currentUserId);
+        // setAllUsers(userList);
+        // setAllUsersBackup(userList);
+
     }
 
     return(
         <Container>
-            <View>
-                <TextInput
-                    placeholder="Seach Friend"
+            <View style={styles.itemsearch}>
+            
+                <Feather style = {styles.searchIcon}
+                      name="search"
+                      color="#009387"
+                      size={20}
+                  />
+                
+            
+            
+                {/* SearchIcon = <SearchIcon/> */}
+                <TextInput style = {styles.searchText}
+                    placeholder="Search Friend"
+                    placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)
                     }}
-                    style={{ fontSize: 18 }}
+                   // style={{ fontSize: 18 }}
                 />
+                    <Feather style = {styles.groupIcon}
+                      name="users"
+                      color="#009387"
+                      size={20}
+                      alignItems = ""
+                  />
+                  <Feather style = {styles.plus}
+                      name="plus-circle"
+                      color="#009387"
+                      size={20}
+                      alignItems = ""
+                  />
 
             </View>
+            
         <FlatList
             extraData={allUsers}
             data={searchBoolean ? allUsers : searchData} 
@@ -169,7 +202,35 @@ const styles = StyleSheet.create({
     textSign: {
         fontSize: 18,
         fontWeight: 'bold'
+    },
+    itemsearch: {
+        padding: 16,
+        borderRadius: 16,
+        flexDirection: 'row',
+    },
+    groupIcon:{
+        marginLeft:80
+        
+    },
+    searchIcon: {
+        marginRight: 10
+    },
+    plus:{
+        marginLeft:20
+    },
+    searchText: {
+        marginLeft:10
     }
 });
 
 export default ContactListPage;
+
+
+
+
+
+
+
+
+
+
