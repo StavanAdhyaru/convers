@@ -38,6 +38,8 @@ const Chat = ({ navigation, route }) => {
     const [user, setUser] = useState(null);
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [chatId, setChatId] = useState(null);
+    const [sendersToken, setSendersToken] = useState(null);
+    const [receiversToken, setreceiversToken] = useState(null);
     const arr = [];
     let STORAGE_KEY = "CHAT_DATA";
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
@@ -132,7 +134,9 @@ const Chat = ({ navigation, route }) => {
 
         let loggedInUser = await getUserDetails(loggedInUserId);
         setLoggedInUser(loggedInUser);
+        setSendersToken(loggedInUser.pushToken);
         let otherUser = await getUserDetails(userId);
+        setreceiversToken(otherUser.pushToken);
         let chatId = await getChatId(loggedInUserId, userId);
         console.log('chatId get messages: ', chatId);
         setChatId(chatId);
@@ -211,6 +215,8 @@ const Chat = ({ navigation, route }) => {
 
         let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
         console.log('newChatId: ', newChatId);
+
+        console.log("tokens for notification exchange :: ", sendersToken, receiversToken);
         
         // if (!chatId) {
         //     // store new chat id in both users location

@@ -96,6 +96,18 @@ const getChatId = (loggedInUserId, userId) => {
     })
 }
 
+const savePushNotificationToken = (userId, token) => {
+    return new Promise((resolve, reject) => {
+        try {
+            let saveToken = userDBRef.doc(userId).update({pushToken: token})
+            resolve(saveToken);
+            
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 // const addPushNotificationToken = (userId, token) => {
 //     return new Promise((resolve, reject) => {
 //         try {
@@ -131,4 +143,4 @@ const getMultipleChats = async (userId) => {
     })
 }
 
-export{ getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats }
+export{ getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken }

@@ -1,5 +1,5 @@
 import { auth, fireDB } from "../firebase";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import {
@@ -17,7 +17,7 @@ import Chat from './Chat';
 import ChangePasswordScreen from './ChangePassword';
 import Registration from './registration';
 import ForgotPasswordPage from './ForgotPasswordPage';
-import {setUserStatus,getSingleUserData,getMultipleChats} from '../API/user'
+import {setUserStatus,getSingleUserData,getMultipleChats, savePushNotificationToken} from '../API/user'
 import { UserImg } from "./Styles/MessageStyles";
 import {getContactslist} from "../API/contacts";
 
@@ -39,15 +39,17 @@ const HomePage = ({ navigation,route }) => {
         email: '',
         contactNumber: '',
         profileImageUrl: '',
-        status: true
+        status: true,
+        pushToken: ''
     });
     const [currentUserId,setId] = useState('')
-    useEffect( async () => {
+    useEffect( () => {
         console.log("in useEffect");
         registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
         getContactslist();
         getUserDataFromDB();
-        const chatIdWithUserId = await getMultipleChats();
+        
+        // const chatIdWithUserId = await getMultipleChats();
         const subscription = AppState.addEventListener("change", nextAppState => {
             if (
               appState.current.match(/inactive|background/) &&
@@ -94,7 +96,10 @@ const HomePage = ({ navigation,route }) => {
         }
     }
 
+    
+
     const registerForPushNotificationsAsync = async () => {
+        console.log("registering for push notification");
         let token;
         if (Device.isDevice) {
           // check for existing permissions
@@ -114,6 +119,11 @@ const HomePage = ({ navigation,route }) => {
           // get push notification token
           token = (await Notifications.getExpoPushTokenAsync()).data;
           console.log(token);
+
+          if(token) {
+              // save it to users database
+              savePushNotificationToken(currentUserId, token)
+          }
           
         } else {
           alert('Must use physical device for Push Notifications');
