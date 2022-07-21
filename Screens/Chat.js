@@ -14,6 +14,7 @@ import { BackgroundImage } from 'react-native-elements/dist/config';
 import { IconButton, Snackbar } from 'react-native-paper';
 // import { Actions } from 'react-native-router-flux';
 import ImagePicker from 'react-native-image-picker';
+import axios from 'axios';
 // import { encryption, decryption } from '../API/AES';
 // import ImagePicker from 'react-native-image-picker';
 // import * as ImagePicker from 'expo-image-picker';
@@ -76,11 +77,11 @@ return result;
     
 
 
-    const [user, setUser] = useState(null);
+    const [otherUser, setOtherUser] = useState(null);
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [chatId, setChatId] = useState(null);
-    const [sendersToken, setSendersToken] = useState(null);
-    const [receiversToken, setreceiversToken] = useState(null);
+    // const [sendersToken, setSendersToken] = useState(null);
+    // const [receiversToken, setreceiversToken] = useState(null);
     const arr = [];
     let STORAGE_KEY = "CHAT_DATA";
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
@@ -352,10 +353,11 @@ return result;
     const getMessages = async () => {
 
         let loggedInUser = await getUserDetails(loggedInUserId);
+        console.log('loggedInUser push token :: ', loggedInUser.pushToken);
         setLoggedInUser(loggedInUser);
-        setSendersToken(loggedInUser.pushToken);
         let otherUser = await getUserDetails(userId);
-        setreceiversToken(otherUser.pushToken);
+        console.log('otherUser push token :: ', otherUser.pushToken);
+        setOtherUser(otherUser);
         let chatId = await getChatId(loggedInUserId, userId);
         console.log('chatId get messages: ', chatId);
         setChatId(chatId);
@@ -391,11 +393,32 @@ return result;
     const readUser = async () => {
         let user = await getUserDetails(userId);
         console.log('user: ', user);
-        setUser(user);
+        setOtherUser(user);
     }
 
     const setMessagesAfterSend = (messages) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+    }
+
+    const notifyUser = async (name, token, message) => {
+        try {
+            let response = await axios.post("https://exp.host/--/api/v2/push/send", {
+                "to": token,
+                "title" : `Convers - ${name}`,
+                "body": message
+            }, {
+                headers: {
+                    "host": "exp.host",
+                    "accept": "application/json",
+                    "accept-encoding": "gzip, deflate",
+                    "content-type": "application/json"
+                }
+            })
+            
+        } catch (error) {
+            console.log('error: ', error);
+            
+        }
     }
 
     const onSend = useCallback(async (messages = []) => {
@@ -422,10 +445,14 @@ return result;
         let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
         console.log('newChatId: ', newChatId);
 
-        console.log("tokens for notification exchange :: ", sendersToken, receiversToken);
-        
-
         setMessagesAfterSend(messages);
+
+        // notify other user
+
+        console.log("tokens for notification exchange :: ", otherUser, loggedInUser);
+        notifyUser( loggedInUser.name, otherUser.pushToken, messages[0].text);
+
+
     }, []);
 
     const renderBubblefunc = (props) => {
