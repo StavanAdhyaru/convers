@@ -15,30 +15,25 @@ const getContactslist = async () => {
             
             // console.log("Contacts:",contact);
         }
-
         checkWithFirebaseUsers(data);
-
-
-
     }
 }
 
 const checkWithFirebaseUsers = async (data) => {
     let allUsers = await getAllUsers();
-    console.log("From contacts.js users list from firebase ",allUsers);
+    // console.log("From contacts.js users list from firebase ",allUsers);
     let commonUserList = []
     
-
-
+    console.log(typeof(data[0].phoneNumbers[0].number))
     for(let i=0;i<data.length;i++){
         for(let j=0;j<allUsers.length;j++){
-            if(data[i].phoneNumbers[0].number == allUsers[j].conatactNumber){
+            if(data[i].phoneNumbers[0].number === allUsers[j].conatactNumber){
                 commonUserList.push(allUsers[j]);
             }
         }
     }
 
-    console.log(commonUserList.length);
+    console.log("Common User List: ",commonUserList.length);
 }
 
 export { getContactslist };

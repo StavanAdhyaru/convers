@@ -1,5 +1,5 @@
 import {auth, fireDB, storage} from '../firebase';
-
+import {getChat} from './chat'
 const userDBRef = fireDB.collection('users');
 
 const getUserDetails = async (userId) => {
@@ -34,10 +34,10 @@ const setUserStatus = async (userId,userData,activeOrNot) => {
     try{
         userDBRef.doc(userId).update({
             status: activeOrNot,
-            name: userData.name,
-            contactNumber: userData.contactNumber,
-            email: userData.email,
-            profileImageUrl: userData.profileImageUrl
+            // name: userData.name,
+            // contactNumber: userData.contactNumber,
+            // email: userData.email,
+            // profileImageUrl: userData.profileImageUrl
 
         });
     }catch (error){
@@ -45,24 +45,39 @@ const setUserStatus = async (userId,userData,activeOrNot) => {
     }
 }
 
-const getAllUsers = async () => {
+const getAllUsers = async (currentUserid) => {
     return new Promise((resolve, reject) => {
         try {
             let userData = [];
-            let eachUser = {};
-            userDBRef.get().then((snapshot) => {
-                snapshot.forEach((doc) => {
-                    eachUser = doc.data();
+            // userDBRef.doc(currentUserid).collection("chatIdList").get().then((snapshot) => {
+            //     snapshot.forEach(async (doc) => {
+            //         eachUser = doc.data();
+            //         eachUser.id = doc.id;
+            //         eachUser.userData =  getUserDetails(doc.id);
+            //         eachUser.chatData =  getChat(eachUser.chatId);
+            //         userData.push(eachUser);
+            //     })
+            //     resolve(userData);
+            // }).catch((error) => {
+            //     reject(error);
+            // })  
+            
+            userDBRef.doc(currentUserid).collection("chatIdList").onSnapshot((querySnapshot) => {
+                const eachUserConnected = querySnapshot.docChanges().map(async ({doc}) => {
+                    const eachUser = doc.data();
                     eachUser.id = doc.id;
+                    eachUser.userData = await getUserDetails(doc.id);
+                    eachUser.chatData = await getChat(eachUser.chatId);
+                    // console.log("each User",eachUser);
                     userData.push(eachUser);
-                    // console.log('userData: ', userData);
                 })
+                console.log(userData);
                 resolve(userData);
-
+                // return userData;
+            // })
             }).catch((error) => {
                 reject(error);
             })
-            
         } catch (error) {
             console.log('error: ', error);
             
@@ -119,7 +134,9 @@ const getMultipleChats = async (userId) => {
                     eachUserChatwithUserId = doc.data();
                     eachUserChatwithUserId.userId = doc.id;
                     userChatwithUserId.push(eachUserChatwithUserId);
+                    console.log(eachUserChatwithUserId);
                 })
+                resolve(userChatwithUserId);
             }).catch((error) => {
                 reject(error);
             })
