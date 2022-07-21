@@ -4,7 +4,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import {
     StyleSheet,
-    Dimensions,AppState
+    Dimensions,AppState, SnapshotViewIOS 
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -20,7 +20,8 @@ import ForgotPasswordPage from './ForgotPasswordPage';
 import {setUserStatus,getSingleUserData,getMultipleChats, savePushNotificationToken} from '../API/user'
 import { UserImg } from "./Styles/MessageStyles";
 import {getContactslist} from "../API/contacts";
-
+import { Snackbar } from "react-native-paper";
+import OtherUserDetailsPage from "./OtherUserDetailsPage";
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 const Tab = createBottomTabNavigator();
@@ -33,6 +34,8 @@ const HomePage = ({ navigation,route }) => {
     const appState = useRef(AppState.currentState);
     const [appStateVisible, setAppStateVisible] = useState(appState.current);
     const [contacts, setContacts] = useState([]);
+    let userId = auth.currentUser.uid;
+
 
     const [currentUserData, setData] = useState({
         name: '',
@@ -43,36 +46,38 @@ const HomePage = ({ navigation,route }) => {
         pushToken: ''
     });
     const [currentUserId,setId] = useState('')
-    useEffect( () => {
+    
+    useEffect( async () => {
+        
         console.log("in useEffect");
         registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
         getContactslist();
         getUserDataFromDB();
-        
-        // const chatIdWithUserId = await getMultipleChats();
+        const chatIdWithUserId = await getMultipleChats();
+        // console.log(chatIdWithUserId);
         const subscription = AppState.addEventListener("change", nextAppState => {
             if (
               appState.current.match(/inactive|background/) &&
               nextAppState === "active"
             ) {
               console.log("App has come to the foreground!");
+              setUserStatus
             }
-      
             appState.current = nextAppState;
             setAppStateVisible(appState.current);
             console.log("AppState", appState.current);
             
             if(appState.current == "active"){
-                setUserStatus(currentUserId,currentUserData,true)
+                console.log("Here for updating userStatus")
+                setUserStatus(userId,currentUserData,true);
             }else{
-                setUserStatus(currentUserId,currentUserData,false)
+                setUserStatus(userId,currentUserData,false);
             }
+            return () => {
+                subscription.remove();
+              };
 
           });
-
-          
-
-        
     }, [])
 
 
@@ -80,17 +85,21 @@ const HomePage = ({ navigation,route }) => {
     const getUserDataFromDB = async () => {
         try {
             console.log("in getUserDataFromDB");
-            let userId = auth.currentUser.uid;
+            // let userId = auth.currentUser.uid;
             console.log(userId);
             setId(userId);
             let response = await fireDB.collection('users').doc(userId).get();
+            // fireDB.collection('users').doc(userId).onSnapshot(snapshot => {
+            //     // console.log("snapshot:",snapshot.get())
+            //     updateCurrentUserDetails(snapshot.data);
+            // })
             console.log('userData: ', response.data());
             let userData = response.data();
             setData({
                 ...userData
             })
 
-            
+            console.log("Here first");
         } catch (error) {
             console.log('error: ', error);
         }
@@ -154,6 +163,7 @@ const HomePage = ({ navigation,route }) => {
                 <Stack.Screen option={{headerStyle: {height: 70}}} initialParams={{currentUserData: currentUserData,currentUserId: currentUserId}} name="Chat" component={Chat}/>
                 <Stack.Screen options={{headerShown:false}} name="Register" component={Registration}/>
                 <Stack.Screen options={{headerShown:false}} name="ForgotPassword" component={ForgotPasswordPage}/>
+                <Stack.Screen options={{headerShown:false}} name="OtherUserDetails" component={OtherUserDetailsPage}/>
             </Stack.Navigator>
         </NavigationContainer>
     );
