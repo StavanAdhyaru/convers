@@ -6,6 +6,7 @@ const chatDBRef = fireDB.collection('chats');
 const storeChat = (chatId, message, loggedInUserId) => {
     console.log('chatId store chat: ', chatId);
     console.log('message: ', message);
+    console.log('loggedInUserId', loggedInUserId);
     return new Promise(async (resolve, reject) => {
         try {
             // if(!chatId) {
