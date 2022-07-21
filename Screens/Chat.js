@@ -1,19 +1,17 @@
 import React, { useEffect, useCallback, useState, useLayoutEffect, FC } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image, TextInput,DevSettings } from 'react-native';
 import {
     UserImgWrapper, UserImg
 } from './Styles/MessageStyles';
-import { Avatar } from 'react-native-elements';
-import { signOut } from 'firebase/auth';
 import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createChat, getChat, storeChat } from '../API/chat';
 import { getUserDetails, addChatId, getChatId } from '../API/user';
-import { auth } from '../firebase';
+import { auth,fireDB } from '../firebase';
 import { BackgroundImage } from 'react-native-elements/dist/config';
-import { IconButton } from 'react-native-paper';
+import { IconButton, Snackbar } from 'react-native-paper';
 // import { Actions } from 'react-native-router-flux';
 import ImagePicker from 'react-native-image-picker';
 // import { encryption, decryption } from '../API/AES';
@@ -43,6 +41,16 @@ const Chat = ({ navigation, route }) => {
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
     const currentUserData = route.params.currentUserData;
     const image = { uri: "https://reactjs.org/logo-og.png" };
+    const [receipentData,setReceipentData] = useState({
+        name: '',
+        email: '',
+        contactNumber: '',
+        profileImageUrl: '',
+        status: false
+    });
+    const [receipentStatus,setReceipentStatus] = useState(false);
+
+
 
     function InputBox() {
         return (
@@ -86,23 +94,70 @@ const Chat = ({ navigation, route }) => {
     }
 
     useEffect(() => {
+
+        getRecepientDataFromDb();
         getMessages();
+       
+        
     }, []);
 
+    const getRecepientDataFromDb = async () => {
+        try{
+            let response = await fireDB.collection('users').doc(userId).get();
+            console.log('userData: ', response.data());
+            let userData = response.data();
+            setReceipentData({
+                ...userData
+            })
+            console.log("setting recepient Status")
+            setReceipentStatus(receipentData.status);
+        }catch(error){
+            console.log(error);
+        }
+
+        // try{
+        //     fireDB.collection('users').doc(userId).onSnapshot(snapshot =>  {
+        //         console.log("getting receipent data",snapshot.data())
+        //         updateRecepientData(snapshot.data())
+        //     })
+        // }catch(error){
+        //     console.log(error);
+        // }
+    }
+
+    const updateRecepientData = (data) =>  {
+        setReceipentData({
+            ...data
+        })
+    }
+    
     //view profile and view profile photo in 3 dots, showimage mein true /false as boolean; kill gap between message and border and keep different colors for sender and receiver texts, clear chat
     // 009387
     useLayoutEffect(() => {
         console.log('receipentName: ', receipentName);
         navigation.setOptions({
             title: receipentName,
+            // title: () => (
+            //     <View>
+            //         <TouchableOpacity>
+            //             <Text style={{textDecorationColor: red}}>{receipentName}</Text>
+            //         </TouchableOpacity>
+            //     </View>
+            // ),
+            // topBar: {
+            //     title   : receipentName
+            // },
             headerStyle: { backgroundColor: '#009387' },
             headerLeft: () => (
                 <View style={{ marginLeft: 5, flexDirection: 'row' }}>
                     <UserImgWrapper>
+                        <TouchableOpacity onPress={() => {navigation.navigate("OtherUserDetails",{
+                            otherUserData: receipentData
+                        })}}>
                         <UserImg style={{ marginRight: 20 }} source={{
                             uri: receipentProfileImage,
                         }} />
-
+                        </TouchableOpacity>
                     </UserImgWrapper>
                 </View>
 
@@ -115,7 +170,15 @@ const Chat = ({ navigation, route }) => {
                     marginRight: 10,
 
                 }}>
-                    <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}>availability</Text>
+                    {/* <Text>{receipentName}</Text> */}
+                {
+                    console.log("recepient status",receipentData.status)
+                }
+                    {receipentData.status ? 
+                        
+                        <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}>Online</Text> :
+                        <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}></Text>
+                        }
 
                     <TouchableOpacity onPress={testpress}>
                         <MaterialCommunityIcons style={{ marginTop: 5 }} name="dots-vertical" size={36} color={'white'} />
@@ -138,6 +201,7 @@ const Chat = ({ navigation, route }) => {
         setChatId(chatId);
 
         let allMessages = await getChat(chatId);
+        // console.log('allMessages: ', allMessages);
 
         let userDetails = {
             [loggedInUserId]: {

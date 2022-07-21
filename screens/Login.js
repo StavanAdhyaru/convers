@@ -75,7 +75,6 @@ const Login = ({ navigation }) => {
 
     const handlePasswordChange = (val) => {
 
-
         if (val.length >= 8) {
             setData({
                 ...data,
