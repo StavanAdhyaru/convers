@@ -18,7 +18,7 @@
     "@react-navigation/native-stack": "^6.6.2",
     "axios": "^0.27.2",
     "crypto-es": "^1.2.7",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "^3.1.9-1",
     "expo": "~45.0.0",
     "expo-contacts": "~10.2.0",
     "expo-image-picker": "~13.1.1",

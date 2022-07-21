@@ -16,6 +16,7 @@ import { BackgroundImage } from 'react-native-elements/dist/config';
 import { IconButton } from 'react-native-paper';
 // import { Actions } from 'react-native-router-flux';
 import ImagePicker from 'react-native-image-picker';
+// import { encryption, decryption } from '../API/AES';
 import {
     MaterialCommunityIcons,
     MaterialIcons,
@@ -27,10 +28,6 @@ import Font from 'expo';
 import moment from 'moment';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
-
-
-
-
 import { encryption,decryption } from '../API/AES';
 // import { HeaderBackButton } from 'react-navigation';
 
@@ -137,11 +134,10 @@ const Chat = ({ navigation, route }) => {
         setLoggedInUser(loggedInUser);
         let otherUser = await getUserDetails(userId);
         let chatId = await getChatId(loggedInUserId, userId);
-        console.log('chatId: ', chatId);
+        console.log('chatId get messages: ', chatId);
         setChatId(chatId);
 
         let allMessages = await getChat(chatId);
-        console.log('allMessages: ', allMessages);
 
         let userDetails = {
             [loggedInUserId]: {
@@ -161,15 +157,8 @@ const Chat = ({ navigation, route }) => {
             }
             delete message.userId
         })
-        console.log('result: ', result);
-        console.log('allMessages: ', allMessages);
 
-        
-        
         setMessages(allMessages);
-
-
-
 
     }
 
@@ -184,45 +173,51 @@ const Chat = ({ navigation, route }) => {
     }
 
     const onSend = useCallback(async (messages = []) => {
-
         // setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+        // let chatId = await getChatId(loggedInUserId, userId);
+        // console.log('chatId: ', chatId);
+        // setChatId(chatId);
 
-        arr.push(messages);
-        for (let i = 0; i < arr.length; i++) {
-            // console.log("element" + i + "=" + arr[i].Text);
-            console.log(JSON.stringify(arr[i])._id);
-            console.log(JSON.stringify(arr[i], null, 4));
-        }
-        const saveData = async () => {
-            try {
-                await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(arr))
-            } catch (e) {
-                alert('Failed to save the data to the storage')
-            }
-        }
+        // arr.push(messages);
+        // for (let i = 0; i < arr.length; i++) {
+        //     // console.log("element" + i + "=" + arr[i].Text);
+        //     console.log(JSON.stringify(arr[i])._id);
+        //     console.log(JSON.stringify(arr[i], null, 4));
+        // }
+        // const saveData = async () => {
+        //     try {
+        //         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(arr))
+        //     } catch (e) {
+        //         alert('Failed to save the data to the storage')
+        //     }
+        // }
 
-        saveData();
+        // saveData();
 
-        const getData = async () => {
-            try {
-                const jsonValue = await AsyncStorage.getItem(STORAGE_KEY)
-                return jsonValue != null ? console.log(" retrieved value:" + JSON.parse(jsonValue)[1].user) : null;
-            } catch (e) {
-                // error reading value
-            }
-        }
+        // const getData = async () => {
+        //     try {
+        //         const jsonValue = await AsyncStorage.getItem(STORAGE_KEY)
+        //         return jsonValue != null ? console.log(" retrieved value:" + JSON.parse(jsonValue)[1].user) : null;
+        //     } catch (e) {
+        //         // error reading value
+        //     }
+        // }
 
-        getData();
+        // getData();
 
-        console.log('messages: ', messages);
+        let chatId = await getChatId(loggedInUserId, userId);
+        console.log('chatId on send: ', chatId);
+        setChatId(chatId);
 
         let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
-        setChatId(newChatId);
+        console.log('newChatId: ', newChatId);
+        
+        // if (!chatId) {
+        //     // store new chat id in both users location
+        //     setChatId(newChatId);
+        //     addChatId(userId, loggedInUserId, newChatId);
+        // }
 
-        if (!chatId) {
-            // store new chat id in both users location
-            addChatId(userId, loggedInUserId, newChatId);
-        }
         setMessagesAfterSend(messages);
     }, []);
 
