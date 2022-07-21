@@ -1,17 +1,19 @@
 import { auth, fireDB, storage } from '../firebase';
 // const loggedInUserId = auth.currentUser.uid;
 const chatDBRef = fireDB.collection('chats');
+// import { encryption, decryption } from './AES';
 
 const storeChat = (chatId, message, loggedInUserId) => {
-    console.log('chatId: ', chatId);
+    console.log('chatId store chat: ', chatId);
     console.log('message: ', message);
     return new Promise(async (resolve, reject) => {
         try {
-            if(!chatId) {
-                let result = await chatDBRef.add({});
-                let newChatId = result.path.split('/')[1];
-                chatId = newChatId;
-            }
+            // if(!chatId) {
+            //     let result = await chatDBRef.add({});
+            //     let newChatId = result.path.split('/')[1];
+            //     chatId = newChatId;
+            // }
+            // let encryptedText = encryption(loggedInUserId, message.text);
             let result = await chatDBRef.doc(chatId).collection('chatData').add({
                 userId: loggedInUserId,
                 text: message.text,
@@ -31,6 +33,8 @@ const getChat = (chatId) => {
             let allChat = chatDBRef.doc(chatId).collection('chatData').onSnapshot((querySnapshot) => {
                 const messagesFromFirestore = querySnapshot.docChanges().map(({doc}) => {
                     const message = doc.data();
+                    console.log('message: ', message);
+                    
                     return { 
                         _id: doc.id,    // chatId
                         ...message, 
@@ -59,6 +63,8 @@ const getChat = (chatId) => {
 //         }
 //     })
 // }
+
+
 
 
 
