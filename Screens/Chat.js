@@ -35,7 +35,6 @@ import { encryption,decryption } from '../API/AES';
 // import { HeaderBackButton } from 'react-navigation';
 
 const Chat = ({ navigation, route }) => {
-    const currentUser = auth.currentUser;
 
     const { userId, name, avatar } = route.params;
     const loggedInUserId = auth.currentUser.uid;
@@ -64,26 +63,31 @@ const Chat = ({ navigation, route }) => {
     const randGen = () => {
 
         var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-var result = ""
-var charactersLength = characters.length;
+        var result = ""
+        var charactersLength = characters.length;
 
-for ( var i = 0; i < 5 ; i++ ) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-}
+        for ( var i = 0; i < 5 ; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
 
-return result;
+        return result;
 
     }
     
 
 
-    const [otherUser, setOtherUser] = useState(null);
-    const [loggedInUser, setLoggedInUser] = useState(null);
+    const [otherUser, setOtherUser] = useState({});
+    const [loggedInUser, setLoggedInUser] = useState({
+        name: '',
+        email: '',
+        contactNumber: '',
+        profileImageUrl: '',
+        status: false,
+        pushToken: ''
+    });
     const [chatId, setChatId] = useState(null);
-    // const [sendersToken, setSendersToken] = useState(null);
-    // const [receiversToken, setreceiversToken] = useState(null);
-    const arr = [];
-    let STORAGE_KEY = "CHAT_DATA";
+    const [sendersToken, setSendersToken] = useState("");
+    const [receiversToken, setReceiversToken] = useState("");
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
     const currentUserData = route.params.currentUserData;
     const image = { uri: "https://reactjs.org/logo-og.png" };
@@ -92,7 +96,8 @@ return result;
         email: '',
         contactNumber: '',
         profileImageUrl: '',
-        status: false
+        status: false,
+        pushToken: ''
     });
     const [receipentStatus,setReceipentStatus] = useState(false);
 
@@ -250,11 +255,8 @@ return result;
     }
 
     useEffect(() => {
-
         getRecepientDataFromDb();
         getMessages();
-       
-        
     }, []);
 
     const getRecepientDataFromDb = async () => {
@@ -267,6 +269,8 @@ return result;
             })
             console.log("setting recepient Status")
             setReceipentStatus(receipentData.status);
+            setReceiversToken(userData.pushToken);
+
         }catch(error){
             console.log(error);
         }
@@ -291,21 +295,11 @@ return result;
     // 009387
     
     useLayoutEffect(() => {
-        getMessages();
+        // getMessages();
 
         console.log('receipentName: ', receipentName);
         navigation.setOptions({
             title: receipentName,
-            // title: () => (
-            //     <View>
-            //         <TouchableOpacity>
-            //             <Text style={{textDecorationColor: red}}>{receipentName}</Text>
-            //         </TouchableOpacity>
-            //     </View>
-            // ),
-            // topBar: {
-            //     title   : receipentName
-            // },
             headerStyle: { backgroundColor: '#009387' },
             headerLeft: () => (
                 <View style={{ marginLeft: 5, flexDirection: 'row' }}>
@@ -353,19 +347,16 @@ return result;
     const getMessages = async () => {
 
         let loggedInUser = await getUserDetails(loggedInUserId);
-        console.log('loggedInUser push token :: ', loggedInUser.pushToken);
-        setLoggedInUser(loggedInUser);
-        let otherUser = await getUserDetails(userId);
-        console.log('otherUser push token :: ', otherUser.pushToken);
-        setOtherUser(otherUser);
+        setLoggedInUser({...loggedInUser});
+        setSendersToken(loggedInUser.pushToken);
+        // let otherUser = await getUserDetails(userId);
+        // setOtherUser(otherUser);
+        console.log("Display :: ", sendersToken, receiversToken);
         let chatId = await getChatId(loggedInUserId, userId);
-        console.log('chatId get messages: ', chatId);
         setChatId(chatId);
-        console.log('chatId: ', chatId);
-
+        console.log('chatId get messages: ', chatId);
 
         let allMessages = await getChat(chatId);
-        // console.log('allMessages: ', allMessages);
 
         let userDetails = {
             [loggedInUserId]: {
@@ -373,8 +364,8 @@ return result;
                 avatar: loggedInUser.profileImageUrl
             },
             [userId]: {
-                name: otherUser.name,
-                avatar: otherUser.profileImageUrl
+                name: receipentData.name,
+                avatar: receipentData.profileImageUrl
             }
         }
 
@@ -390,17 +381,12 @@ return result;
 
     }
 
-    const readUser = async () => {
-        let user = await getUserDetails(userId);
-        console.log('user: ', user);
-        setOtherUser(user);
-    }
-
     const setMessagesAfterSend = (messages) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
     }
 
     const notifyUser = async (name, token, message) => {
+        console.log('name, token, message: ', name, token, message);
         try {
             let response = await axios.post("https://exp.host/--/api/v2/push/send", {
                 "to": token,
@@ -440,8 +426,6 @@ return result;
         
         // setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
 
-        console.log('messages: ', messages);   
-
         let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
         console.log('newChatId: ', newChatId);
 
@@ -449,8 +433,8 @@ return result;
 
         // notify other user
 
-        console.log("tokens for notification exchange :: ", otherUser, loggedInUser);
-        notifyUser( loggedInUser.name, otherUser.pushToken, messages[0].text);
+        // console.log('otherUser, lçnotification exchange :: ", otherUser, loggedInUser);
+        notifyUser( loggedInUser.name, receiversToken, messages[0].text);
 
 
     }, []);
