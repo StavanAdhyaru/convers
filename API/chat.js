@@ -34,8 +34,6 @@ const getChat = (chatId) => {
             let allChat = chatDBRef.doc(chatId).collection('chatData').onSnapshot((querySnapshot) => {
                 const messagesFromFirestore = querySnapshot.docChanges().map(({doc}) => {
                     const message = doc.data();
-                    console.log('message: ', message);
-                    
                     return { 
                         _id: doc.id,    // chatId
                         ...message, 
