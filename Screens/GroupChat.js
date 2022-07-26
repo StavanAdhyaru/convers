@@ -93,7 +93,7 @@ const usersList = [
 //     }
 // }
 
-const ContactListPage = ({navigation, item}) => {
+const GroupChat = ({navigation, item}) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
     const [allUsersBackup, setAllUsersBackup] = useState([]);
@@ -154,22 +154,6 @@ const ContactListPage = ({navigation, item}) => {
                     }}
                    // style={{ fontSize: 18 }}
                 />
-                 <TouchableOpacity onPress={navigation.navigate('GroupChat')}>
-                  <Feather style = {styles.groupIcon}
-                      name="users"
-                      color="#009387"
-                      size={20}
-                  />
-                 
-
-                  </TouchableOpacity>
-               
-                  <Feather style = {styles.plus}
-                      name="plus-circle"
-                      color="#009387"
-                      size={20}
-                      alignItems = ""
-                  />
                  
 
             </View>
@@ -213,42 +197,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    button: {
-        alignItems: 'center',
-        marginTop: 25
-    },
-    signIn: {
-        width: 340,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10
-    },
-    textSign: {
-        fontSize: 18,
-        fontWeight: 'bold'
-    },
     itemsearch: {
         padding: 16,
         borderRadius: 16,
         flexDirection: 'row',
     },
-    groupIcon:{
-        marginLeft:80
-        
-    },
     searchIcon: {
         marginRight: 10
-    },
-    plus:{
-        marginLeft:20
     },
     searchText: {
         marginLeft:10
     }
 });
 
-export default ContactListPage;
+export default GroupChat;
 
 
 
