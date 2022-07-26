@@ -13,12 +13,11 @@ import { auth, fireDB, storage } from '../firebase';
 import { BackgroundImage } from 'react-native-elements/dist/config';
 import { IconButton, Snackbar } from 'react-native-paper';
 // import { Actions } from 'react-native-router-flux';
-import ImagePicker from 'react-native-image-picker';
+// import ImagePicker from 'react-native-image-picker';
 import axios from 'axios';
 // import { encryption, decryption } from '../API/AES';
-// import ImagePicker from 'react-native-image-picker';
-// import * as ImagePicker from 'expo-image-picker';
-
+import * as ImagePicker from 'expo-image-picker';
+import {v4 as uuidv4} from 'uuid';
 
 import {
     MaterialCommunityIcons,
@@ -104,53 +103,39 @@ const Chat = ({ navigation, route }) => {
 
     const [tempimpurl, settempimpurl] = useState("");
     const [boolvar, setboolvar] = useState(false);
+    const [isImage, setIsImage] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
 
     
     const getDownloadURL = async (randVar) => {
         try {
+            let tempUrl = await storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`).getDownloadURL();
+            setIsImage(true);
 
-            // ("images/sharePhotos/").child(`${chatId}`)
+            return tempUrl;
+            // setboolvar(true);
 
-            let tempUrl = await storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`).getDownloadURL().then(() => {
-
-                settempimpurl(tempUrl);
-
-
-            });
-
-
-            setboolvar(true);
-            console.log(' retrieved url of image message : ', tempUrl);
-            console.log('type of url:  ', typeof(tempUrl));
-            console.log('value of url variable is:', url);
-
-            storeChat(chatId, messages, loggedInUserId);
-            console.log('stored/sent messages are:  ',messages);
-
-            
+            // console.log('chatId, messages, loggedInUserId: ', chatId, messages[0], loggedInUserId);
+            // storeChat(chatId, messages, loggedInUserId);
+            // console.log('stored/sent messages are:  ',messages);
             
         } catch (error) {
-            console.log('error in getDownloadURL function : ', error);
-            
+            console.log('error in getDownloadURL function : ', error);   
         }
     }
 
      
         
-        const uploadPhoto = (image, randVar) => {
+    const uploadPhoto = (image, randVar) => {
         return new Promise( async (resolve, reject) => {
             try {
                 console.log('image argument:: ', image.uri);
                 const response = await fetch(image.uri)
                 const blob = await response.blob();
-
-
                 var ref = storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`);
                 console.log("_____________________LOADING...____________________");
                 resolve(ref.put(blob));
 
-                
-                
             } catch (error) {
                 console.log('error: ', error);
                 reject(error);
@@ -174,18 +159,44 @@ const Chat = ({ navigation, route }) => {
               });
           
             if (!result.cancelled) {  
-                console.log('result (image uri): ', result.uri);
                 imgURI=result.uri;
                 setPhoto(result);
 
                 let randVarInSendPhoto = randGen();
 
+                // upload photo
                 uploadPhoto(result,randVarInSendPhoto).then(async () => {
-                    console.log('await getDownloadURL  started ');
-                    await getDownloadURL(randVarInSendPhoto);
-                    console.log('getDownloadURL finished');
-                    alert("Image uploaded!")
                     console.log('image uploaded');
+                    // get URL after uploading
+                    let imageUrl = await getDownloadURL(randVarInSendPhoto);
+                    console.log('imageUrl: ', imageUrl);
+                    setImageUrl(imageUrl);
+                    setIsImage(true);
+                    // store chat
+                    // let chat = await storeChat()
+                    onSend([{image: imageUrl}]);
+
+                    // store message in chat DB
+                    // let message = {
+                    //     image: imageUrl
+                    // }
+                    // console.log('message: ', message);
+                    // console.log('uuidv4(): ', uuidv4());
+
+                    // let newMessage = [{
+                    //     // _id: uuid.v4(),
+                    //     createdAt: new Date(),
+                    //     image: imageUrl,
+                    //     user: {
+                    //         _id: loggedInUserId,
+                    //         avatar: avatar,
+                    //         name: name
+                    //     }
+                    // }]
+                    // console.log('newMessage: ', newMessage);
+
+                    // onSend(newMessage);
+
                 }).catch((error) => {
                     alert("Could not upload Image.");
                     console.log('error in uploading: ', error);
@@ -217,16 +228,12 @@ const Chat = ({ navigation, route }) => {
 
     function testpress() {
         console.log("dots pressed");
-        
         return (
             <View>
                 <Picker style={{ height: 20, width: 150 }} mode={DropDownPicker}>
                     <Picker.Item label='View profile' > </Picker.Item>
                     <Picker.Item label='Delete chat '> </Picker.Item>
                 </Picker>
-
-                
-
             </View>
 
         );
@@ -236,15 +243,15 @@ const Chat = ({ navigation, route }) => {
     function renderSend(props) {
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center', height: 60 }}>
-      <Icon name="camera"  size={32} style={{ marginHorizontal: 5 }} onPress={sendPhoto} />
-      <Send {...props}>
-        <View style={styles.btnSend2}>
-        <IconButton icon="send-circle" size={32} color="#009387" />
+                <Icon name="camera"  size={32} style={{ marginHorizontal: 5 }} onPress={sendPhoto} />
+                <Send {...props}>
+                    <View style={styles.btnSend2}>
+                    <IconButton icon="send-circle" size={32} color="#009387" />
 
-          {/* <Icon name="ios-send" size={24} color='#6646ee' /> */}
-        </View>
-      </Send>
-    </View>
+                    {/* <Icon name="ios-send" size={24} color='#6646ee' /> */}
+                    </View>
+                </Send>
+            </View>
         );
     }
 
@@ -372,7 +379,7 @@ const Chat = ({ navigation, route }) => {
         let result = allMessages.forEach((message) => {
             message["user"] = {
                 _id: message.userId,
-                ...userDetails[message.userId]
+                ...userDetails[message.userId],
             }
             delete message.userId
         })
@@ -408,6 +415,7 @@ const Chat = ({ navigation, route }) => {
     }
 
     const onSend = useCallback(async (messages = []) => {
+        console.log('messages: ', messages);
 
         let chatId = await getChatId(loggedInUserId, userId);
         console.log('chatId on send: ', chatId);
@@ -417,18 +425,32 @@ const Chat = ({ navigation, route }) => {
         console.log('value of image url variable tempimpurl is:  ', tempimpurl);
         console.log('value of boolean variable boolvar is:  ', boolvar);
 
-        if (boolvar == true)
-        {
-            setMessages(tempimpurl);
-            boolvar = false;
+        console.log('isImage: ', messages[0].image);
+        if(messages[0].image){
+            // setMessages(imageUrl);
+            // isImage = false;
+            setIsImage(true);
+            console.log('isImage: ', isImage);
+            messages[0].createdAt = new Date();
         }
 
         
         // setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
 
-        let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
+        let newChatId = await storeChat(chatId, messages[0], loggedInUserId, isImage);
         console.log('newChatId: ', newChatId);
 
+        if(isImage) {
+            messages[0]._id = "1",
+            messages[0].user = {
+                _id: loggedInUserId,
+                name: name,
+                avatar: avatar
+            }
+
+        }
+
+        console.log('messages: ', messages);
         setMessagesAfterSend(messages);
 
         // notify other user
@@ -473,13 +495,9 @@ const Chat = ({ navigation, route }) => {
                 scrollToBottom
                 scrollToBottomComponent={scrollToBottomComponent}
 
-
                 renderBubble={renderBubblefunc}
 
-                
-
                 sendingContainer={InputBox}
-
 
                 onSend={messages => onSend(messages)}
                 alwaysShowSend
@@ -488,10 +506,7 @@ const Chat = ({ navigation, route }) => {
                 messages={messages}
                 showAvatarForEveryMessage={false}
                 
-
                 renderSend={renderSend}
-
-
 
                 user={{
                     _id: loggedInUserId,

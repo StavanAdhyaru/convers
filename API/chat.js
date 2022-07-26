@@ -3,7 +3,7 @@ import { auth, fireDB, storage } from '../firebase';
 const chatDBRef = fireDB.collection('chats');
 // import { encryption, decryption } from './AES';
 
-const storeChat = (chatId, message, loggedInUserId) => {
+const storeChat = (chatId, message, loggedInUserId, isImage) => {
     console.log('chatId store chat: ', chatId);
     console.log('message: ', message);
     console.log('loggedInUserId', loggedInUserId);
@@ -15,11 +15,22 @@ const storeChat = (chatId, message, loggedInUserId) => {
             //     chatId = newChatId;
             // }
             // let encryptedText = encryption(loggedInUserId, message.text);
-            let result = await chatDBRef.doc(chatId).collection('chatData').add({
-                userId: loggedInUserId,
-                text: message.text,
-                createdAt: message.createdAt
-            })
+            if(isImage) {
+                let result = await chatDBRef.doc(chatId).collection('chatData').add({
+                    userId: loggedInUserId,
+                    // text: message.text,
+                    createdAt: message.createdAt,
+                    image: message.image
+                })
+            } else {
+                let result = await chatDBRef.doc(chatId).collection('chatData').add({
+                    userId: loggedInUserId,
+                    text: message.text,
+                    createdAt: message.createdAt
+                })
+            }
+
+
             resolve(chatId);
             
         } catch (error) {
