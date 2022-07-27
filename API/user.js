@@ -1,5 +1,5 @@
-import {auth, fireDB, storage} from '../firebase';
-import {getChat} from './chat'
+import { auth, fireDB, storage } from '../firebase';
+import { getChat } from './chat'
 const userDBRef = fireDB.collection('users');
 
 const getUserDetails = async (userId) => {
@@ -10,28 +10,43 @@ const getUserDetails = async (userId) => {
             }).catch((error) => {
                 reject(error);
             })
-            
+
         } catch (error) {
             console.log('error: ', error);
-            
+
+        }
+    })
+}
+
+const findUserEmail = async (emailId) => {
+    return new Promise((resolve, reject) => {
+        try {
+         userDBRef.where('email', '==', emailId).get().then((doc) => {
+                resolve(doc.data());
+            }).catch((error) => {
+                reject(error);
+            });
+
+        } catch (error) {
+            console.log('error: ', error)
         }
     })
 }
 
 const getSingleUserData = async (userId) => {
-    try{
+    try {
         let response = await userDBRef.doc(userId).get();
-        console.log("User data 1",response.data());
+        console.log("User data 1", response.data());
         return response.data()
-    }catch(error){
+    } catch (error) {
         console.log(error);
     }
 }
 
-const setUserStatus = async (userId,userData,activeOrNot) => {
+const setUserStatus = async (userId, userData, activeOrNot) => {
 
-    console.log("UserId:",userId)
-    try{
+    console.log("UserId:", userId)
+    try {
         userDBRef.doc(userId).update({
             status: activeOrNot,
             // name: userData.name,
@@ -40,8 +55,8 @@ const setUserStatus = async (userId,userData,activeOrNot) => {
             // profileImageUrl: userData.profileImageUrl
 
         });
-    }catch (error){
-        console.log('error: ',error);
+    } catch (error) {
+        console.log('error: ', error);
     }
 }
 
@@ -50,7 +65,7 @@ const getAllUsers = async (currentUserid) => {
         try {
             let userData = [];
             userDBRef.doc(currentUserid).collection("chatIdList").onSnapshot((querySnapshot) => {
-                const eachUserConnected = querySnapshot.docChanges().map(async ({doc}) => {
+                const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
                     const eachUser = doc.data();
                     eachUser.id = doc.id;
                     eachUser.userData = await getUserDetails(doc.id);
@@ -59,13 +74,13 @@ const getAllUsers = async (currentUserid) => {
                 })
                 console.log(userData);
                 resolve(userData);
-                
+
             }).catch((error) => {
                 reject(error);
             })
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     })
 }
@@ -73,10 +88,10 @@ const getAllUsers = async (currentUserid) => {
 const addChatId = (userId, loggedInUserId, newChatId) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let result1 = await userDBRef.doc(userId).collection("chatIdList").doc(loggedInUserId).set({chatId: newChatId});
-            let result2 = await userDBRef.doc(loggedInUserId).collection("chatIdList").doc(userId).set({chatId: newChatId});
+            let result1 = await userDBRef.doc(userId).collection("chatIdList").doc(loggedInUserId).set({ chatId: newChatId });
+            let result2 = await userDBRef.doc(loggedInUserId).collection("chatIdList").doc(userId).set({ chatId: newChatId });
             resolve(result2);
-            
+
         } catch (error) {
             reject(error);
         }
@@ -89,7 +104,7 @@ const getChatId = (loggedInUserId, userId) => {
         try {
             let doc = await userDBRef.doc(loggedInUserId).collection('chatIdList').doc(userId).get()
             resolve(doc.data().chatId);
-            
+
         } catch (error) {
             reject(error);
         }
@@ -99,9 +114,9 @@ const getChatId = (loggedInUserId, userId) => {
 const savePushNotificationToken = (userId, token) => {
     return new Promise((resolve, reject) => {
         try {
-            let saveToken = userDBRef.doc(userId).update({pushToken: token})
+            let saveToken = userDBRef.doc(userId).update({ pushToken: token })
             resolve(saveToken);
-            
+
         } catch (error) {
             reject(error);
         }
@@ -111,8 +126,8 @@ const savePushNotificationToken = (userId, token) => {
 // const addPushNotificationToken = (userId, token) => {
 //     return new Promise((resolve, reject) => {
 //         try {
-            
-            
+
+
 //         } catch (error) {
 //             reject(error);
 //         }
@@ -123,7 +138,7 @@ const getMultipleChats = async (userId) => {
 
     let userChatwithUserId = [];
     let eachUserChatwithUserId = {};
-    
+
     return new Promise((resolve, reject) => {
         try {
             userDBRef.doc(userId).collection("chatIdList").get().then((snapshot) => {
@@ -137,12 +152,12 @@ const getMultipleChats = async (userId) => {
             }).catch((error) => {
                 reject(error);
             })
-            
+
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     })
 }
 
-export{ getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken }
+export { getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken,findUserEmail }
