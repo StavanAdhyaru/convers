@@ -5,7 +5,7 @@ const userDBRef = fireDB.collection('users');
 const getUserDetails = async (userId) => {
     return new Promise((resolve, reject) => {
         try {
-            userDBRef.doc(userId).get().then((doc) => {
+            const data = userDBRef.doc(userId).get().then((doc) => {
                 resolve(doc.data());
             }).catch((error) => {
                 reject(error);
@@ -26,6 +26,27 @@ const getSingleUserData = async (userId) => {
     }catch(error){
         console.log(error);
     }
+}
+
+const findUserByEmail = async (email) => {
+
+    return new Promise((resolve, reject) => {
+    
+        try{
+           userDBRef.where('email','==',email).get().then((snapshot) => {
+            if(snapshot.isempty){
+                console.log('No matching documents.');
+                // return;
+            }
+            snapshot.forEach(doc => {
+                console.log(doc.id, '=>', doc.data());
+                return doc.data();
+            });
+           });
+        }catch(error){
+            console.log("Errroror : ",error)
+        }
+    })
 }
 
 const setUserStatus = async (userId,userData,activeOrNot) => {
@@ -133,4 +154,4 @@ const getMultipleChats = async (userId) => {
     })
 }
 
-export{ getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats }
+export{ getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, findUserByEmail }

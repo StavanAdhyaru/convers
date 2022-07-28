@@ -33,49 +33,47 @@ import Feather from 'react-native-vector-icons/Feather';
 
 
 
-const ContactListPage = ({navigation, item}) => {
+const ContactListPage = ({ navigation, route }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
-    const [searchBoolean,setBoolean] = useState(true);
-    const [searchData,setSearchData] = useState([]);
-    const [allUsersBackup, setAllUsersBackup] = useState([]);
+    const [searchBoolean, setBoolean] = useState(true);
+    const [searchData, setSearchData] = useState([]);
     const currentUserId = auth.currentUser.uid;
     let userData = [];
 
-    const searchName = (input)=> {
+    const searchName = (input) => {
         let data = allUsers;
-        if(input === ""){
+        if (input === "") {
             setBoolean(true);
             setSearchData(data);
-        }else{
+        } else {
             setBoolean(false);
-            let searchD = data.filter((item) =>{
+            let searchD = data.filter((item) => {
                 return item.userData.name.toLowerCase().includes(input.toLowerCase())
             });
             setSearchData(searchD);
         }
-        
-        
     }
+    
     useEffect(() => {
         readUser();
-        
+
         getAllUsersFromDB();
-        
-    },[]);
+
+    }, []);
     useEffect(() => {
         readUser();
         // getAllUsersFromDB();
     })
-    
+
     const readUser = async () => {
-            const getUser = await getUserDetails(currentUserId)
-            // await AsyncStorage.setItem('user', JSON.stringify(getUser));
-            setCurrentUser(getUser);
-            // console.log("user: ",currentUser )
+        const getUser = await getUserDetails(currentUserId)
+        // await AsyncStorage.setItem('user', JSON.stringify(getUser));
+        setCurrentUser(getUser);
+        // console.log("user: ",currentUser )
     }
     const getAllUsersFromDB = async () => {
-        
+
         fireDB.collection('users').doc(auth.currentUser.uid).collection("chatIdList").onSnapshot((querySnapshot) => {
             const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
                 const eachUser = doc.data();
@@ -88,16 +86,16 @@ const ContactListPage = ({navigation, item}) => {
                 userData = userData.sort((a, b) => b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime());
                 setAllUsers(userData);
             });
-            
-            
+
+
             // console.log("User Data: ",userData);
             // setAllUsers(userData);
-            
+
             // console.log("All Users ",allUsers);
             // console.log("one data",allUsers[0].chatData[allUsers[0].chatData.length-1].createdAt);
         })
-        
-        
+
+
         // let tempAllUsers = await getAllUsers();
         // // let userList = tempAllUsers.filter((element) => element.id != currentUserId);
         // setAllUsers(userList);
@@ -105,83 +103,77 @@ const ContactListPage = ({navigation, item}) => {
 
     }
 
-    return(
+    return (
         <Container>
             <View style={styles.itemsearch}>
-            
-                <Feather style = {styles.searchIcon}
-                      name="search"
-                      color="#009387"
-                      size={20}
-                  />
-                
-            
-            
+
+                <Feather style={styles.searchIcon}
+                    name="search"
+                    color="#009387"
+                    size={20}
+                />
+
+
+
                 {/* SearchIcon = <SearchIcon/> */}
-                <TextInput style = {styles.searchText}
+                <TextInput style={styles.searchText}
                     placeholder="Search Friend"
                     placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)
                     }}
-                   // style={{ fontSize: 18 }}
+                // style={{ fontSize: 18 }}
                 />
-                    <Feather style = {styles.groupIcon}
-                      name="users"
-                      color="#009387"
-                      size={20}
-                      alignItems = ""
-                  />
-                  <Feather style = {styles.plus}
-                      name="plus-circle"
-                      color="#009387"
-                      size={20}
-                      alignItems = ""
-                  />
+                <TouchableOpacity onPress={() => navigation.navigate('CreateGroupName')}>
+                    <Feather style={styles.groupIcon}
+                        name="users"
+                        color="#009387"
+                        size={20}
+                        alignItems=""
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('AddContact')}>
+                    <Feather style={styles.plus}
+                        name="plus-circle"
+                        color="#009387"
+                        size={20}
+                        alignItems=""
+                    />
+                </TouchableOpacity>
 
             </View>
-            
-        <FlatList
-            extraData={allUsers}
-            data={searchBoolean ? allUsers : searchData} 
-            renderItem={({ item }) => (
-                <Card onPress={() => navigation.navigate('Chat', { 
-                    userId: item.id, 
-                    loggedInUserId: currentUserId, 
-                    name: currentUser.name, 
-                    avatar: currentUser.profileImageUrl, 
-                    receipentName: item.userData.name, 
-                    receipentProfileImage: item.userData.profileImageUrl 
+
+            <FlatList
+                extraData={allUsers}
+                data={searchBoolean ? allUsers : searchData}
+                renderItem={({ item }) => (
+                    <Card onPress={() => navigation.navigate('Chat', {
+                        userId: item.id,
+                        loggedInUserId: currentUserId,
+                        name: currentUser.name,
+                        avatar: currentUser.profileImageUrl,
+                        receipentName: item.userData.name,
+                        receipentProfileImage: item.userData.profileImageUrl
                     })}>
-                    <UserInfo>
-                        
-                        <Image
-                            source={{ uri: item.userData.profileImageUrl }}
-                            style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
-                        />
-                        <TextSection>
-                            <UserInfoText>
-                                {/* {
-                                    console.log("message Count",item.messageCount)
-                                }
-                                {
-                                    console.log("Name: ",item.userData.name)
-                                }
-                                {
-                                    console.log("Text: ",item.chatData[0].createdAt.toLocaleDateString())
-                                } */}
-                                <UserName>{item.userData.name}</UserName>
-                                {/* <PostTime>{`${item.chatData[0].createdAt.getDate()}`+"/"+`${item.chatData[0].createdAt.getMonth()}`+"/"+`${item.chatData[0].createdAt.getYear()}`}</PostTime> */}
-                                <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime>
-                            </UserInfoText>
-                            <MessageText>{item.chatData[0].text}</MessageText>
-                        </TextSection>
-                    </UserInfo>
-                </Card>
-            )}
-            keyExtractor={(item)=>item.id}
-        />
-    </Container>
+                        <UserInfo>
+
+                            <Image
+                                source={{ uri: item.userData.profileImageUrl }}
+                                style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
+                            />
+                            <TextSection>
+                                <UserInfoText>
+                                    <UserName>{item.userData.name}</UserName>
+                                    <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime>
+                                </UserInfoText>
+                                <MessageText>{item.chatData[0].text}</MessageText>
+                            </TextSection>
+                        </UserInfo>
+                    </Card>
+                )}
+                keyExtractor={(item) => item.id}
+            />
+        </Container>
     );
 }
 
@@ -212,29 +204,19 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         flexDirection: 'row',
     },
-    groupIcon:{
-        marginLeft:80
-        
+    groupIcon: {
+        marginLeft: 80
+
     },
     searchIcon: {
         marginRight: 10
     },
-    plus:{
-        marginLeft:20
+    plus: {
+        marginLeft: 20
     },
     searchText: {
-        marginLeft:10
+        marginLeft: 10
     }
 });
 
 export default ContactListPage;
-
-
-
-
-
-
-
-
-
-

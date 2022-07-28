@@ -236,10 +236,7 @@ const SettingsPage = ({ navigation }) => {
                 }).catch((error) => {
                     alert("Could not upload Image.");
                 })
-    
             }
-
-
         } catch (error) {
             console.log('error: ', error);
             

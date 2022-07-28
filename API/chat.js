@@ -9,17 +9,35 @@ const storeChat = (chatId, message, loggedInUserId) => {
     console.log('loggedInUserId', loggedInUserId);
     return new Promise(async (resolve, reject) => {
         try {
+            if(!chatId) {
+                let result = await chatDBRef.add({});
+                let newChatId = result.path.split('/')[1];
+                chatId = newChatId;
+            }
+            let encryptedText = encryption(loggedInUserId, message.text);
+            let result = await chatDBRef.doc(chatId).collection('chatData').add({
+                userId: loggedInUserId,
+                text: message.text,
+                createdAt: message.createdAt
+            })
+            resolve(chatId);
+            
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const storeChatForGroup = (chatId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
             // if(!chatId) {
             //     let result = await chatDBRef.add({});
             //     let newChatId = result.path.split('/')[1];
             //     chatId = newChatId;
             // }
             // let encryptedText = encryption(loggedInUserId, message.text);
-            let result = await chatDBRef.doc(chatId).collection('chatData').add({
-                userId: loggedInUserId,
-                text: message.text,
-                createdAt: message.createdAt
-            })
+            let result = await chatDBRef.doc(chatId).set({isGroup:true})
             resolve(chatId);
             
         } catch (error) {
@@ -52,6 +70,9 @@ const getChat = (chatId) => {
     })
 }
 
+
+
+
 // const createChat = () => {
 //     return new Promise((resolve, reject) => {
 //         try {
@@ -69,4 +90,4 @@ const getChat = (chatId) => {
 
 
 
-export{ storeChat, getChat };
+export{ storeChat, getChat,storeChatForGroup };
