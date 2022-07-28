@@ -5,7 +5,7 @@ const userDBRef = fireDB.collection('users');
 const getUserDetails = async (userId) => {
     return new Promise((resolve, reject) => {
         try {
-            userDBRef.doc(userId).get().then((doc) => {
+            const data = userDBRef.doc(userId).get().then((doc) => {
                 resolve(doc.data());
             }).catch((error) => {
                 reject(error);
@@ -18,20 +18,20 @@ const getUserDetails = async (userId) => {
     })
 }
 
-const findUserEmail = async (emailId) => {
-    return new Promise((resolve, reject) => {
-        try {
-         userDBRef.where('email', '==', emailId).get().then((doc) => {
-                resolve(doc.data());
-            }).catch((error) => {
-                reject(error);
-            });
+// const findUserEmail = async (emailId) => {
+//     return new Promise((resolve, reject) => {
+//         try {
+//          userDBRef.where('email', '==', emailId).get().then((doc) => {
+//                 resolve(doc.data());
+//             }).catch((error) => {
+//                 reject(error);
+//             });
 
-        } catch (error) {
-            console.log('error: ', error)
-        }
-    })
-}
+//         } catch (error) {
+//             console.log('error: ', error)
+//         }
+//     })
+// }
 
 const getSingleUserData = async (userId) => {
     try {
@@ -43,7 +43,28 @@ const getSingleUserData = async (userId) => {
     }
 }
 
-const setUserStatus = async (userId, userData, activeOrNot) => {
+const findUserByEmail = async (email) => {
+
+    return new Promise((resolve, reject) => {
+    
+        try{
+           userDBRef.where('email','==',email).get().then((snapshot) => {
+            if(snapshot.isempty){
+                console.log('No matching documents.');
+                // return;
+            }
+            snapshot.forEach(doc => {
+                console.log(doc.id, '=>', doc.data());
+                return doc.data();
+            });
+           });
+        }catch(error){
+            console.log("Errroror : ",error)
+        }
+    })
+}
+
+const setUserStatus = async (userId,userData,activeOrNot) => {
 
     console.log("UserId:", userId)
     try {
@@ -160,4 +181,4 @@ const getMultipleChats = async (userId) => {
     })
 }
 
-export { getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken,findUserEmail }
+export { getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken, findUserByEmail }

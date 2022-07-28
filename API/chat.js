@@ -29,8 +29,24 @@ const storeChat = (chatId, message, loggedInUserId, isImage) => {
                     createdAt: message.createdAt
                 })
             }
+            resolve(chatId);
+            
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
 
-
+const storeChatForGroup = (chatId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // if(!chatId) {
+            //     let result = await chatDBRef.add({});
+            //     let newChatId = result.path.split('/')[1];
+            //     chatId = newChatId;
+            // }
+            // let encryptedText = encryption(loggedInUserId, message.text);
+            let result = await chatDBRef.doc(chatId).set({isGroup:true})
             resolve(chatId);
             
         } catch (error) {
@@ -91,4 +107,4 @@ const deleteChat = async (chatId) => {
 
 
 
-export{ storeChat, getChat, deleteChat };
+export{ storeChat, getChat, deleteChat, storeChatForGroup };

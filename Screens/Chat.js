@@ -433,7 +433,7 @@ const Chat = ({ navigation, route }) => {
         if(messages[0].image){
             // setMessages(imageUrl);
             // isImage = false;
-            setIsImage(true);
+            setIsImage(true)
             console.log('isImage: ', isImage);
             messages[0].createdAt = new Date();
         }

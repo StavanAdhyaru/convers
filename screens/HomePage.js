@@ -22,7 +22,9 @@ import { UserImg } from "./Styles/MessageStyles";
 import {getContactslist} from "../API/contacts";
 import { Snackbar } from "react-native-paper";
 import OtherUserDetailsPage from "./OtherUserDetailsPage";
-import GroupChat from "./GroupChat";
+import AddContact from "./addContact";
+import CreateGroupName from "./CreateGroupName";
+import AddPeopleInGroup from "./AddPeopleInGroup";
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 const Tab = createBottomTabNavigator();
@@ -165,15 +167,16 @@ const HomePage = ({ navigation,route }) => {
                 <Stack.Screen options={{headerShown:false}} name="Register" component={Registration}/>
                 <Stack.Screen options={{headerShown:false}} name="ForgotPassword" component={ForgotPasswordPage}/>
                 <Stack.Screen options={{headerShown:false}} name="OtherUserDetails" component={OtherUserDetailsPage}/>
-                <Stack.Screen options={{headerShown:false}} name="GroupChat" component={GroupChat}/>
-
+                <Stack.Screen options={{headerShown:false}} name="AddContact" component={AddContact}/>
+                <Stack.Screen options={{headerShown:false}} name="CreateGroupName" component={CreateGroupName}/>
+                <Stack.Screen options={{headrerShown:false}}name="AddPeopleInGroup" component={AddPeopleInGroup}/>
+                
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
 const TabStackNavigator = () => {
-    
 
     return (
         <Tab.Navigator

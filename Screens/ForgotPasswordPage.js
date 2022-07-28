@@ -21,10 +21,6 @@ const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
 const ForgotPasswordPage = ({ navigation }) => {
-
-
-
-
     const [data, setData] = useState({
         email: '',
         check_textInputChange: false,
