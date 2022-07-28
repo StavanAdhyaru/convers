@@ -63,12 +63,16 @@ const ContactListPage = ({navigation, item}) => {
         getAllUsersFromDB();
         
     },[]);
+    useEffect(() => {
+        readUser();
+        // getAllUsersFromDB();
+    })
     
     const readUser = async () => {
             const getUser = await getUserDetails(currentUserId)
             // await AsyncStorage.setItem('user', JSON.stringify(getUser));
             setCurrentUser(getUser);
-            console.log("user: ",currentUser )
+            // console.log("user: ",currentUser )
     }
     const getAllUsersFromDB = async () => {
         
@@ -79,7 +83,7 @@ const ContactListPage = ({navigation, item}) => {
                 eachUser.userData = await getUserDetails(doc.id);
                 eachUser.chatData = await getChat(eachUser.chatId);
                 eachUser.messageCount = eachUser.chatData.length;
-                console.log("each User",eachUser);
+                // console.log("each User",eachUser);
                 userData.push(eachUser);
                 userData = userData.sort((a, b) => b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime());
                 setAllUsers(userData);
@@ -157,7 +161,7 @@ const ContactListPage = ({navigation, item}) => {
                         />
                         <TextSection>
                             <UserInfoText>
-                                {
+                                {/* {
                                     console.log("message Count",item.messageCount)
                                 }
                                 {
@@ -165,7 +169,7 @@ const ContactListPage = ({navigation, item}) => {
                                 }
                                 {
                                     console.log("Text: ",item.chatData[0].createdAt.toLocaleDateString())
-                                }
+                                } */}
                                 <UserName>{item.userData.name}</UserName>
                                 {/* <PostTime>{`${item.chatData[0].createdAt.getDate()}`+"/"+`${item.chatData[0].createdAt.getMonth()}`+"/"+`${item.chatData[0].createdAt.getYear()}`}</PostTime> */}
                                 <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime>
