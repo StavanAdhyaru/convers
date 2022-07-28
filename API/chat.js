@@ -9,11 +9,11 @@ const storeChat = (chatId, message, loggedInUserId, isImage) => {
     console.log('loggedInUserId', loggedInUserId);
     return new Promise(async (resolve, reject) => {
         try {
-            // if(!chatId) {
-            //     let result = await chatDBRef.add({});
-            //     let newChatId = result.path.split('/')[1];
-            //     chatId = newChatId;
-            // }
+            if(!chatId) {
+                let result = await chatDBRef.add({});
+                let newChatId = result.path.split('/')[1];
+                chatId = newChatId;
+            }
             // let encryptedText = encryption(loggedInUserId, message.text);
             if(isImage) {
                 let result = await chatDBRef.doc(chatId).collection('chatData').add({
