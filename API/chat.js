@@ -61,6 +61,19 @@ const getChat = (chatId) => {
     })
 }
 
+const deleteChat = async (chatId) => {
+    try{
+        console.log("Chat Id: ",chatId);
+        await chatDBRef.doc(chatId).collection("chatData").get().then( async (snapshot) => {
+            snapshot.forEach(chat => {
+                chatDBRef.doc(chatId).collection("chatData").doc(chat.id).delete();
+            });
+        })
+    }catch(error){
+        console.log(error);
+    }
+}
+
 // const createChat = () => {
 //     return new Promise((resolve, reject) => {
 //         try {
@@ -78,4 +91,4 @@ const getChat = (chatId) => {
 
 
 
-export{ storeChat, getChat };
+export{ storeChat, getChat, deleteChat };

@@ -311,8 +311,12 @@ const Chat = ({ navigation, route }) => {
             headerLeft: () => (
                 <View style={{ marginLeft: 5, flexDirection: 'row' }}>
                     <UserImgWrapper>
+                        {
+                            console.log("Chat Id while sending",chatId)
+                        }
                         <TouchableOpacity onPress={() => {navigation.navigate("OtherUserDetails",{
-                            otherUserData: receipentData
+                            otherUserId: userId,
+                            chatId: chatId
                         })}}>
                         <UserImg style={{ marginRight: 20 }} source={{
                             uri: receipentProfileImage,
@@ -333,17 +337,17 @@ const Chat = ({ navigation, route }) => {
                     {/* <Text>{receipentName}</Text> */}
                 {
                     console.log("recepient status",receipentData.status)
-                }
+                }   
                     {receipentData.status ? 
                         
                         <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}>Online</Text> :
                         <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}></Text>
                         }
 
-                    <TouchableOpacity onPress={testpress}>
+                    {/* <TouchableOpacity onPress={testpress}>
                         <MaterialCommunityIcons style={{ marginTop: 5 }} name="dots-vertical" size={36} color={'white'} />
 
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
 
                 </View>

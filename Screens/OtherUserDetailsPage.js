@@ -18,6 +18,7 @@ import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
+import {deleteChat} from '../API/chat';
 
 
 
@@ -27,23 +28,51 @@ const height_logo = height * 0.28;
 
 
 const OtherUserDetailsPage = ({navigattion,route}) => {
-    const otherUserData = route.params;
-
+    const {otherUserId} = route.params;
+    const chatId = route.params.chatId;
+    const [otherUserData,setOtherUserData] = useState({
+        name: '',
+        email: '',
+        contactNumber: '',
+        profileImageUrl: ''
+    })
 
     useEffect(() => {
-        console.log("Other User Data",otherUserData);
-        
+        getUserDataFromDB();
     },[]);
-    const deleteConversation = () => {
+
+
+    const getUserDataFromDB = async () => {
+        try {
+            console.log("in getUserDataFromDB");
+            let userId = auth.currentUser.uid;
+            console.log(userId);
+            let response = await fireDB.collection('users').doc(otherUserId).get();
+            console.log('userData: ', response.data());
+            let userData = response.data();
+            setOtherUserData({
+                ...userData
+            })
+            
+        } catch (error) {
+            console.log('error: ', error);
+            
+        }
+    }
+    const deleteConversation = async () => {
+        console.log("Deletion of Chat Id: ",chatId)
+        try{
+            deleteChat(chatId);
+        }
+        catch(error){
+            console.log(error)
+        }
 
     }
     return(
 
         <View style={styles.container}>
                 <StatusBar backgroundColor='#009387' barStyle="light-content" />
-                <View style={styles.header}>
-                    <Text style={styles.text_header}>My account</Text>
-                </View>
                 <View>
                     <Image
                         source={{ uri: otherUserData.profileImageUrl }}

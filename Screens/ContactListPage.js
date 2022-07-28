@@ -18,50 +18,99 @@ import {
     TextInput,
     Platform,
     StyleSheet,
-    Pressable,
+    Pressable, 
     StatusBar,
     Alert,
     Button,
     Dimensions, Image, FlatList, Menu
 } from 'react-native';
 import { getUserDetails, getAllUsers } from '../API/user';
-import { auth, fireDB } from '../firebase';
+import { auth } from '../firebase';
 import { useEffect, useState } from 'react';
-import { getChat } from '../API/chat';
+import { AsyncStorage } from 'react-native';
 // import Icon from 'react-native-ico-material-design';
 import Feather from 'react-native-vector-icons/Feather';
 
+const usersList = [
+    {
+        id: '1',
+        userName: 'Stavan Doe',
+        userImg: require('../assets/users/user-1.jpeg'),
+        messageTime: '4 mins ago',
+        messageText:
+            'Hey there, this is my test for a post of my social app in React Native.',
+    },
+    {
+        id: '2',
+        userName: 'John Doe',
+        userImg: require('../assets/users/user-2.jpeg'),
+        messageTime: '2 hours ago',
+        messageText:
+            'Hey there, this is my test for a post of my social app in React Native.',
+    },
+    {
+        id: '3',
+        userName: 'Ken William',
+        userImg: require('../assets/users/user-3.jpeg'),
+        messageTime: '1 hours ago',
+        messageText:
+            'Hey there, this is my test for a post of my social app in React Native.',
+    },
+    {
+        id: '4',
+        userName: 'Selina Paul',
+        userImg: require('../assets/users/user-4.jpeg'),
+        messageTime: '1 day ago',
+        messageText:
+            'Hey there, this is my test for a post of my social app in React Native.',
+    },
+    {
+        id: '5',
+        userName: 'Christy Alex',
+        userImg: require('../assets/users/user-8.jpeg'),
+        messageTime: '2 days ago',
+        messageText:
+            'Hey there, this is my test for a post of my social app in React Native.',
+    },
+];
 
 
-const ContactListPage = ({navigation, item}) => {
+// const getRecepeintUserData = async () => {
+//     try {
+//         console.log("in getUserDataFromDB");
+//         let userId = auth.currentUser.uid;
+//         console.log(userId);
+//         let response = await fireDB.collection('users').doc(userId).get();
+//         console.log('userData: ', response.data());
+//         let userData = response.data();
+//         setData({
+//             ...userData
+//         })
+
+//     } catch (error) {
+//         console.log('error: ', error);
+
+//     }
+// }
+
+const ContactListPage = ({navigation, route}) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
-    const [searchBoolean,setBoolean] = useState(true);
-    const [searchData,setSearchData] = useState([]);
     const [allUsersBackup, setAllUsersBackup] = useState([]);
     const currentUserId = auth.currentUser.uid;
-    let userData = [];
+    const [dataFromState, setData] = useState(null)
 
     const searchName = (input)=> {
-        let data = allUsers;
-        if(input === ""){
-            setBoolean(true);
-            setSearchData(data);
-        }else{
-            setBoolean(false);
-            let searchD = data.filter((item) =>{
-                return item.userData.name.toLowerCase().includes(input.toLowerCase())
-            });
-            setSearchData(searchD);
+        let data = dataFromState;
+        let searchData = data.filter((item) =>{
+          return item.userName.toLowerCase().includes(input.toLowerCase())
+        });
+        setData(searchData)
         }
-        
-        
-    }
+
     useEffect(() => {
         readUser();
-        
         getAllUsersFromDB();
-        
     },[]);
     useEffect(() => {
         readUser();
@@ -69,11 +118,17 @@ const ContactListPage = ({navigation, item}) => {
     })
     
     const readUser = async () => {
+        const user = await AsyncStorage.getItem('user');
+        if(user) {
+            console.log('user: ', JSON.parse(user));
+            setCurrentUser(JSON.parse(user));
+        } else {
             const getUser = await getUserDetails(currentUserId)
-            // await AsyncStorage.setItem('user', JSON.stringify(getUser));
+            await AsyncStorage.setItem('user', JSON.stringify(getUser));
             setCurrentUser(getUser);
-            // console.log("user: ",currentUser )
+        }
     }
+
     const getAllUsersFromDB = async () => {
         
         fireDB.collection('users').doc(auth.currentUser.uid).collection("chatIdList").onSnapshot((querySnapshot) => {
@@ -102,6 +157,10 @@ const ContactListPage = ({navigation, item}) => {
         // // let userList = tempAllUsers.filter((element) => element.id != currentUserId);
         // setAllUsers(userList);
         // setAllUsersBackup(userList);
+        let tempAllUsers = await getAllUsers();
+        let userList = tempAllUsers.filter((element) => element.id != currentUserId);
+        setAllUsers(userList);
+        setAllUsersBackup(userList);
 
     }
 
@@ -126,37 +185,40 @@ const ContactListPage = ({navigation, item}) => {
                     }}
                    // style={{ fontSize: 18 }}
                 />
-                    <Feather style = {styles.groupIcon}
+                 <TouchableOpacity onPress={navigation.navigate("GroupChat")}>
+                  <Feather style = {styles.groupIcon}
                       name="users"
                       color="#009387"
                       size={20}
-                      alignItems = ""
                   />
+                 
+
+                  </TouchableOpacity>
+               
                   <Feather style = {styles.plus}
                       name="plus-circle"
                       color="#009387"
                       size={20}
                       alignItems = ""
                   />
+                 
 
             </View>
             
         <FlatList
-            extraData={allUsers}
-            data={searchBoolean ? allUsers : searchData} 
+            data={allUsers}
             renderItem={({ item }) => (
                 <Card onPress={() => navigation.navigate('Chat', { 
                     userId: item.id, 
                     loggedInUserId: currentUserId, 
                     name: currentUser.name, 
                     avatar: currentUser.profileImageUrl, 
-                    receipentName: item.userData.name, 
-                    receipentProfileImage: item.userData.profileImageUrl 
+                    receipentName: item.name, 
+                    receipentProfileImage: item.profileImageUrl 
                     })}>
                     <UserInfo>
-                        
                         <Image
-                            source={{ uri: item.userData.profileImageUrl }}
+                            source={{ uri: item.profileImageUrl }}
                             style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
                         />
                         <TextSection>
@@ -173,13 +235,15 @@ const ContactListPage = ({navigation, item}) => {
                                 <UserName>{item.userData.name}</UserName>
                                 {/* <PostTime>{`${item.chatData[0].createdAt.getDate()}`+"/"+`${item.chatData[0].createdAt.getMonth()}`+"/"+`${item.chatData[0].createdAt.getYear()}`}</PostTime> */}
                                 <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime>
+                                <UserName>{item.name}</UserName>
+                                <PostTime>{item.messageTime}</PostTime>
                             </UserInfoText>
-                            <MessageText>{item.chatData[0].text}</MessageText>
+                            <MessageText>{item.messageText}</MessageText>
                         </TextSection>
                     </UserInfo>
                 </Card>
             )}
-            keyExtractor={(item)=>item.id}
+            keyExtractor={(item,index)=>index.toString()}
         />
     </Container>
     );
