@@ -27,7 +27,6 @@ const CreateGroupName = ({navigation,route}) => {
 
     const [data, setData] = useState({
         groupName: '',
-        groupImage: '',
         groupId: uuidv4(),
         groupImageUrl: '',
         check_textInputChange: false,
@@ -54,7 +53,9 @@ const CreateGroupName = ({navigation,route}) => {
     const goToAddPeoplePage = () => {
         if(data.check_textInputChange){
             navigation.navigate('AddPeopleInGroup',{
-                groupName: data.groupName
+                groupName: data.groupName,
+                groupImageUrl: data.groupImageUrl,
+                groupId: data.groupId
             });
         }else{
             console.log("hi")

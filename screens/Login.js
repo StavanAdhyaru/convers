@@ -27,7 +27,9 @@ const Login = ({ navigation }) => {
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
             if (user) {
-                navigation.replace("Home")
+                if(user.emailVerified){
+                    navigation.replace("Home");
+                }
             }
         })
 
@@ -100,8 +102,14 @@ const Login = ({ navigation }) => {
                 .signInWithEmailAndPassword(data.email, data.password)
                 .then(userCredentials => {
                     const user = userCredentials.user;
-                    console.log("Logged in with ", user.email);
+                    if(auth.currentUser.emailVerified){
+                        console.log("Logged in with ", user.email);
                     navigation.replace("Home");
+                    }else{
+                        userCredentials.user.sendEmailVerification();
+                        alert("Varify Email Address");
+                    }
+                    
                 })
                 .catch(error => {
                     console.log(error);

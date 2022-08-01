@@ -159,7 +159,7 @@ const SettingsPage = ({ navigation }) => {
         }
     }
     const navigateToSignInScreen = () => {
-        navigation.replace("Login");
+        navigation.replace("Log");
     }
 
     const uploadPhoto = (image) => {

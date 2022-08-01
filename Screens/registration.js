@@ -19,7 +19,7 @@ import { auth, fireDB } from '../firebase';
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
-const Registration = () => {
+const Registration = ({navigation,route}) => {
 
     const dbRef = fireDB.collection('users');
     const [data, setData] = useState({
@@ -78,7 +78,6 @@ const Registration = () => {
         if (val.length !== 0) {
             const pattern = /[a-zA-Z0-9]+[\.]?([a-zA-Z0-9]+)?[\@][a-z]{3,9}[\.][a-z]{2,5}/;
             const result = pattern.test(val);
-
 
             if (result) {
                 setData({
@@ -187,16 +186,22 @@ const Registration = () => {
                     .createUserWithEmailAndPassword(data.email, data.password)
                     .then(userCredentials => {
                         const user = userCredentials.user;
-                        console.log("Registered in with ", user.email);
                         dbRef.doc(user.uid).set({
                             name: data.name,
                             email: data.email,
                             contactNumber: data.contactNumber,
                             chatIds: []
                         });
+                        userCredentials.user.sendEmailVerification();
+                        // auth.signOut();
                         setDefaults();
-                        Alert.alert('Success', 'You are successfully registered', [{ text: 'OK' }]);
+                        alert("Varification Email sent");
                         navigation.replace("Home");
+                        // console.log("Registered in with ", user.email);
+                        
+
+                        // Alert.alert('Success', 'You are successfully registered', [{ text: 'OK' }]);
+                        
                     })
                     .catch(error => {
                         console.log(error);

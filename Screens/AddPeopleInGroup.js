@@ -42,7 +42,12 @@ const AddPeopleInGroup = ({ navigation, route }) => {
     const currentUserId = auth.currentUser.uid;
     let newUserData = [];
     let usersInGroup = [];
+    const [usersInGroupState,setUsersInGroupState] = useState([]);
+    let userIdsInGroup = [];
     const [refresh,setRefresh] = useState(false);
+    const groupName = route.params.groupName;
+    const groupImageUrl = route.params.groupImageUrl;
+    const groupId = route.params.groupId;
 
     useEffect(() => {
         readUser();
@@ -75,7 +80,41 @@ const AddPeopleInGroup = ({ navigation, route }) => {
     const generateGroup = async () => {
         let chatID = uuidv4();
         console.log("Created Chat Id",chatID);
+        console.log("Group Name", groupName);
+        console.log("Group Id", groupId);
+        console.log("userse In Group", usersInGroupState);
         await storeChatForGroup(chatID);
+
+        const temp = usersInGroupState;
+        temp.push(currentUserId);
+        setUsersInGroupState(temp);
+
+        for(let i=0;i<usersInGroup.length;i++){
+            userIdsInGroup.push(usersInGroupState[i].id);
+        }
+        console.log(userIdsInGroup)
+        await createGroup(chatID);
+
+    }
+
+    const createGroup = async (chatId) => {
+       await fireDB.collection('groups').doc(groupId).set({
+            groupName: groupName,
+            groupImageUrl: groupImageUrl,
+            chatID: chatId,
+            usersList: userIdsInGroup
+        })
+        storeChatIdtoUser(chatId);
+    }
+
+    const storeChatIdtoUser = async (chatID) =>  {
+        for(let i=0; i<userIdsInGroup.length ;i++){
+            await fireDB.collection('users').doc(userIdsInGroup[i]).collection('chatIdList').doc(groupId).set({
+                chatID: chatID,
+                isAGroup: true
+            })
+        }
+        navigation.navigate('Home');
     }
 
     const searchName = (input) => {
@@ -165,25 +204,30 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                             const tempArray = allUsers;
                             let flag = true;
                             console.log("Pressed")
-                            for(let i=0;i<usersInGroup.length;i++){
-                                if(item.id === usersInGroup[i].id){
-                                    usersInGroup.splice(i,1);
-                                    console.log("Hello")
-                                    // for(let i=0;i<tempArray.length;i++){
-                                    //     if(item.id === tempArray.id){
-                                    //         tempArray[i].added = false;
-                                    //         setAllUsers(tempArray);
-                                    //         break;
-                                    //     }
-                                    // }
-                                    console.log(usersInGroup)
-                                    flag=false;
+                            console.log("Helloo",usersInGroup)
+                            if(usersInGroup.length>0){
+                                for(let i=0;i<usersInGroup.length;i++){
+                                    if(item.id === usersInGroup[i].id){
+                                        usersInGroup.splice(i,1);
+                                        console.log("Hello")
+                                        // for(let i=0;i<tempArray.length;i++){
+                                        //     if(item.id === tempArray.id){
+                                        //         tempArray[i].added = false;
+                                        //         setAllUsers(tempArray);
+                                        //         break;
+                                        //     }
+                                        // }
+                                        setUsersInGroupState(usersInGroup);
+                                        flag=false;
+                                    }
                                 }
                             }
+                           
                             if(flag){
+                                console.log("I was here")
                                 usersInGroup.push(item);
+                                setUsersInGroupState(usersInGroup);
                                 console.log(usersInGroup)
-
                             }
                             
                             // if(item.added){
