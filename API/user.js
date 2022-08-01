@@ -124,7 +124,11 @@ const getChatId = (loggedInUserId, userId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let doc = await userDBRef.doc(loggedInUserId).collection('chatIdList').doc(userId).get()
-            resolve(doc.data().chatId);
+            console.log('doc.data(): ', doc.data());
+            if(doc.data()) {
+                resolve(doc.data().chatId);
+            }
+            resolve(null);
 
         } catch (error) {
             reject(error);

@@ -189,8 +189,7 @@ const Registration = ({navigation,route}) => {
                         dbRef.doc(user.uid).set({
                             name: data.name,
                             email: data.email,
-                            contactNumber: data.contactNumber,
-                            chatIds: []
+                            contactNumber: data.contactNumber
                         });
                         userCredentials.user.sendEmailVerification();
                         // auth.signOut();

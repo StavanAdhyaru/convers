@@ -206,7 +206,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     itemsearch: {
-        padding: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 70,
         borderRadius: 16,
         flexDirection: 'row',
     },
@@ -221,7 +223,7 @@ const styles = StyleSheet.create({
         marginLeft: 20
     },
     searchText: {
-        marginLeft: 10
+        margin: 10
     }
 });
 

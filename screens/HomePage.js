@@ -50,13 +50,13 @@ const HomePage = ({ navigation,route }) => {
     });
     const [currentUserId,setId] = useState('')
     
-    useEffect( async () => {
+    useEffect(() => {
         
         console.log("in useEffect");
         registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
         getContactslist();
         getUserDataFromDB();
-        const chatIdWithUserId = await getMultipleChats();
+        // const chatIdWithUserId = await getMultipleChats();
         // console.log(chatIdWithUserId);
         const subscription = AppState.addEventListener("change", nextAppState => {
             if (

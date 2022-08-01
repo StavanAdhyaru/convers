@@ -309,7 +309,7 @@ const Chat = ({ navigation, route }) => {
             title: receipentName,
             headerStyle: { backgroundColor: '#009387' },
             headerLeft: () => (
-                <View style={{ marginLeft: 5, flexDirection: 'row' }}>
+                <View style={{ marginLeft: 0, flexDirection: 'row' }}>
                     <UserImgWrapper>
                         {
                             console.log("Chat Id while sending",chatId)
@@ -318,7 +318,7 @@ const Chat = ({ navigation, route }) => {
                             otherUserId: userId,
                             chatId: chatId
                         })}}>
-                        <UserImg style={{ marginRight: 20 }} source={{
+                        <UserImg style={{ margin: 0 }} source={{
                             uri: receipentProfileImage,
                         }} />
                         </TouchableOpacity>
@@ -329,9 +329,8 @@ const Chat = ({ navigation, route }) => {
             headerRight: () => (
                 <View style={{
                     flexDirection: 'row',
-
                     justifyContent: 'space-between',
-                    marginRight: 10,
+                    margin: 0
 
                 }}>
                     {/* <Text>{receipentName}</Text> */}
@@ -422,27 +421,32 @@ const Chat = ({ navigation, route }) => {
         console.log('messages: ', messages);
 
         let chatId = await getChatId(loggedInUserId, userId);
-        console.log('chatId on send: ', chatId);
-        setChatId(chatId);
-
-        console.log('onsend called');
-        console.log('value of image url variable tempimpurl is:  ', tempimpurl);
-        console.log('value of boolean variable boolvar is:  ', boolvar);
-
-        console.log('isImage: ', messages[0].image);
-        if(messages[0].image){
-            // setMessages(imageUrl);
-            // isImage = false;
-            setIsImage(true)
-            console.log('isImage: ', isImage);
-            messages[0].createdAt = new Date();
+        if(chatId) {
+            console.log('chatId on send: ', chatId);
+            setChatId(chatId);
+    
+            console.log('onsend called');
+            console.log('value of image url variable tempimpurl is:  ', tempimpurl);
+            console.log('value of boolean variable boolvar is:  ', boolvar);
+    
+            console.log('isImage: ', messages[0].image);
+            if(messages[0].image){
+                // setMessages(imageUrl);
+                // isImage = false;
+                setIsImage(true)
+                console.log('isImage: ', isImage);
+                messages[0].createdAt = new Date();
+            }
         }
 
-        
         // setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
 
         let newChatId = await storeChat(chatId, messages[0], loggedInUserId, isImage);
-        console.log('newChatId: ', newChatId);
+        if(!chatId) {
+            console.log('newChatId: ', newChatId);
+            setChatId(newChatId);
+            await addChatId(userId, loggedInUserId, newChatId);
+        }
 
         if(isImage) {
             messages[0]._id = "1",
