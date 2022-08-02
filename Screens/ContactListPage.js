@@ -31,9 +31,11 @@ import { useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
 // import Icon from 'react-native-ico-material-design';
 import Feather from 'react-native-vector-icons/Feather';
+import { useIsFocused } from "@react-navigation/native";
 
 
 const ContactListPage = ({ navigation, route }) => {
+    const isFocused = useIsFocused();
     const [currentUser, setCurrentUser] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
     const [searchBoolean, setBoolean] = useState(true);
@@ -41,7 +43,17 @@ const ContactListPage = ({ navigation, route }) => {
     const currentUserId = auth.currentUser.uid;
     const [dataFromState, setData] = useState(null);
     let userData  = [];
-    
+
+
+    const onResult = (querySnapshot) => {
+        console.log('querySnapshot: ', querySnapshot.size);
+
+    }
+
+    const onError = (error) => {
+        console.log('error: ', error);
+
+    }
 
     const searchName = (input) => {
         let data = allUsers;
@@ -61,8 +73,9 @@ const ContactListPage = ({ navigation, route }) => {
         readUser();
 
         getAllUsersFromDB();
+        // fireDB.collection('users').doc(currentUserId).collection('chatIdList').onSnapshot(onResult, onError);
 
-    }, []);
+    }, [isFocused]);
 
 
     const readUser = async () => {
@@ -82,6 +95,7 @@ const ContactListPage = ({ navigation, route }) => {
                 eachUser.chatData = await getChat(eachUser.chatId);
                 eachUser.messageCount = eachUser.chatData.length;
                 // console.log("each User",eachUser);
+                console.log('eachUser: ', eachUser);
                 userData.push(eachUser);
                 userData = userData.sort((a, b) => b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime());
                 setAllUsers(userData);
@@ -157,7 +171,8 @@ const ContactListPage = ({ navigation, route }) => {
                         name: currentUser.name,
                         avatar: currentUser.profileImageUrl,
                         receipentName: item.userData.name,
-                        receipentProfileImage: item.userData.profileImageUrl
+                        receipentProfileImage: item.userData.profileImageUrl,
+                        chatId: item.chatId
                     })}>
                         <UserInfo>
 
