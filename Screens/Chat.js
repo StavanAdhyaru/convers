@@ -73,50 +73,52 @@ const Chat = ({ navigation, route }) => {
         chatId: ''
     });
 
-    const onResult = (querySnapshot) => {
-        let allChats = [];
-        const messagesFromFirestore = querySnapshot.docChanges().map(({doc}) => {
-            let message = doc.data();
-            message._id = doc.id;
-            message.createdAt = message.createdAt.toDate();
-            allChats.push(message);
+    // const onResult = (querySnapshot) => {
+    //     let allChats = [];
+    //     const messagesFromFirestore = querySnapshot.docChanges().map(({doc}) => {
+    //         let message = doc.data();
+    //         message._id = doc.id;
+    //         message.createdAt = message.createdAt.toDate();
+    //         allChats.push(message);
             
-        })
-        allChats.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        let userDetails = {
-            [loggedInUserId]: {
-                name: loggedInUser.name,
-                avatar: loggedInUser.profileImageUrl
-            },
-            [userId]: {
-                name: receipentData.name,
-                avatar: receipentData.profileImageUrl
-            }
-        }
+    //     })
+    //     allChats.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    //     let userDetails = {
+    //         [loggedInUserId]: {
+    //             name: loggedInUser.name,
+    //             avatar: loggedInUser.profileImageUrl
+    //         },
+    //         [userId]: {
+    //             name: receipentData.name,
+    //             avatar: receipentData.profileImageUrl
+    //         }
+    //     }
 
-        let result = allChats.forEach((message) => {
-            message["user"] = {
-                _id: message.userId,
-                ...userDetails[message.userId],
-            }
-            delete message.userId
-        })
+    //     let result = allChats.forEach((message) => {
+    //         message["user"] = {
+    //             _id: message.userId,
+    //             ...userDetails[message.userId],
+    //         }
+    //         delete message.userId
+    //     })
 
-        setMessages(allChats);
-    }
+    //     setMessages(allChats);
+    // }
 
-    const onError = (error) => {
-        console.log('error: ', error);
+    // const onError = (error) => {
+    //     console.log('error: ', error);
 
-    }
+    // }
 
     useEffect(() => {
 
         console.log("Is a group", isGroup);
         getRecepientDataFromDb();
-        const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot((querySnapshot) => {
+        const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot(async (querySnapshot) => {
             let allChats = [];
-            querySnapshot.docChanges().map(({doc}) => {
+            let response = await getChat(chatId);
+            // allChats.push(response);
+            querySnapshot.docChanges().map(async ({doc}) => {
                 let message = doc.data();
                 message._id = doc.id;
                 message.createdAt = message.createdAt.toDate();
@@ -135,6 +137,10 @@ const Chat = ({ navigation, route }) => {
                 }
             }
 
+            if(allChats.length === 1) {
+                allChats = [...response, ...allChats];
+            }
+
             allChats.forEach((message) => {
                 message["user"] = {
                     _id: message.userId,
@@ -142,6 +148,7 @@ const Chat = ({ navigation, route }) => {
                 }
                 delete message.userId
             })
+            console.log('allChats: ', allChats);
             setMessages(allChats);
 
         });
@@ -149,7 +156,7 @@ const Chat = ({ navigation, route }) => {
         return () => unsubscribe();
 
         // getMessages();
-    }, [isFocused, newMessage]);
+    }, [isFocused]);
 
     useLayoutEffect(() => {
         // getMessages();
@@ -466,7 +473,7 @@ const Chat = ({ navigation, route }) => {
         }
 
         console.log('messages: ', messages);
-        setNewMessage(messages);
+        // setNewMessage(messages);
         setMessagesAfterSend(messages);
 
         // notify other user
