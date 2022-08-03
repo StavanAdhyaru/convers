@@ -2,12 +2,8 @@ import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
-    PostTime,
-    MessageText,
     TextSection,
 } from './Styles/MessageStyles';
 import { Animated } from 'react-native';
@@ -80,7 +76,8 @@ const AddPeopleInGroup = ({ navigation, route }) => {
             name: groupName,
             profileImageUrl: groupImageUrl,
             chatID: chatId,
-            usersList: tempArray
+            usersList: tempArray,
+            createdBy: currentUserId
         })
         storeChatIdtoUser(chatId);
     }

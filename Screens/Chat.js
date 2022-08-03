@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState, useLayoutEffect, FC } from 'react';
+import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import {
     UserImgWrapper, UserImg
@@ -10,12 +10,12 @@ import { addChatId } from '../Helpers/User';
 import { auth, fireDB, storage } from '../Firebase';
 import { IconButton } from 'react-native-paper';
 import axios from 'axios';
-// import { encryption, decryption } from '../API/AES';
 import * as ImagePicker from 'expo-image-picker';
 import { useIsFocused } from "@react-navigation/native";
 import {
     FontAwesome5,
     Entypo,
+    
 } from '@expo/vector-icons';
 
 const Chat = ({ navigation, route }) => {
@@ -55,7 +55,44 @@ const Chat = ({ navigation, route }) => {
 
     useEffect(() => {
         console.log("Is a group", isGroup);
-        getRecepientDataFromDb();
+        // getRecepientDataFromDb();
+
+
+        try{
+            if(isGroup){
+                console.log("User Id at Chat.js ",userId)
+                fireDB.collection('groups').doc(userId).onSnapshot((snapshot) => {
+                    let gData = snapshot.data();
+                    setGroupData({
+                        ...gData
+                    })
+                });
+            }else{
+                fireDB.collection('users').doc(userId).onSnapshot((snapshot) => {
+                   
+                        let userData = snapshot.data();
+                        console.log("Getting data of other user here first: ",snapshot.data());
+                        setReceipentData({
+                            ...userData
+                        })
+                        console.log("setting recepient Status")
+                        setReceipentStatus(receipentData.status);
+                        setReceiversToken(userData.pushToken);
+                });
+            }
+        }catch(error){
+            console.log(error);
+        }
+
+
+
+
+
+
+
+
+
+
         const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot(async (querySnapshot) => {
             let allChats = [];
             let response = await getChat(chatId);

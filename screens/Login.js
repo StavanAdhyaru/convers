@@ -8,8 +8,7 @@ import {
     StyleSheet,
     StatusBar,
     Alert,
-    Button,
-    Dimensions, Image
+    Dimensions
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';

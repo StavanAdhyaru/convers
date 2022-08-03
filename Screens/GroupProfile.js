@@ -9,9 +9,6 @@ import {
     Platform,
     StyleSheet,
     StatusBar,
-    Alert,
-    Button,
-    ScrollView,
     Dimensions, Image, FlatList
 } from 'react-native';
 import {
@@ -21,11 +18,10 @@ import {
     UserName,
     TextSection,
 } from './Styles/MessageStyles';
-import * as ImagePicker from 'expo-image-picker';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Feather from 'react-native-vector-icons/Feather';
+
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
@@ -37,11 +33,13 @@ const GroupProfile = ({ navigattion, route }) => {
         name: '',
         profileImageUrl: '',
         usersList: [],
-        chatId: ''
+        chatId: '',
+        createdBy: ''
     });
     const [userData, setUserData] = useState([]);
     const tempUserData = [];
     const isFocused = useIsFocused();
+    const currentUserId = auth.currentUser.uid;
 
     useEffect(() => {
         console.log("Group Id", groupId);
@@ -53,16 +51,31 @@ const GroupProfile = ({ navigattion, route }) => {
                 ...gData
             })
 
-            gData.usersList.forEach((userId) => {
-                fireDB.collection('users').doc(userId).onSnapshot((snapshot1) => {
-                    console.log("Snapshot value ", snapshot1.data());
-                    tempUsers.push(snapshot1.data());
-                    setUserData(tempUsers);
+            if(gData != null){
+                gData.usersList.forEach((userId) => {
+                    fireDB.collection('users').doc(userId).onSnapshot((snapshot1) => {
+                        console.log("Snapshot value ", snapshot1.data());
+                        tempUsers.push(snapshot1.data());
+                        setUserData(tempUsers);
+                    })
                 })
-            })
+            }
+            
 
         })
+
     }, [isFocused]);
+
+    const deleteGroup = () => {
+        fireDB.collection('chats').doc(groupData.chatId).delete();
+        groupData.usersList.forEach((uId) => {
+            fireDB.collection('users').doc(uId).collection('chatIdList').doc(groupId).delete();
+        })
+        fireDB.collection('groups').doc(groupId).delete().then(() => {
+            navigation.replace("Home");
+        });
+        
+    }
 
     return (
         <View style={styles.container}>
@@ -98,7 +111,7 @@ const GroupProfile = ({ navigattion, route }) => {
                 {/* Email */}
                 <Text style={[styles.text_footer, {
                     marginTop: 15
-                }]}>Participents</Text>
+                }]}>Participants</Text>
                 <FlatList
                     extraData={userData}
                     data={userData}
@@ -120,21 +133,27 @@ const GroupProfile = ({ navigattion, route }) => {
                     keyExtractor={(item) => item.id}
                 />
 
-                <View style={styles.button}>
-                    <LinearGradient
-                        colors={['#FF0000', '#FF0000']}
-                        style={styles.deleteAccount}
-                    >
-                        <TouchableOpacity
-                        // onPress={deleteConversation}
-                        >
-                            <Text style={[styles.textSign, {
-                                color: '#fff'
-                            }]}>Delete Conversation</Text>
-                        </TouchableOpacity>
-                    </LinearGradient>
-                </View>
+
+                {
+                    groupData.createdBy === currentUserId ? <View style={styles.button}>
+                        <LinearGradient
+                            colors={['#FF0000', '#FF0000']}
+                            style={styles.deleteAccount}
+                        > 
+                        <TouchableOpacity onPress={deleteGroup}>
+                         
+                                <Text style={[styles.textSign, {
+                                    color: '#fff'
+                                }]}>Delete Group</Text>
+                            </TouchableOpacity>
+                        </LinearGradient>
+                    </View> : <View></View>
+                }
+
+
                 {/* Sign out account Button */}
+
+
 
             </Animatable.View>
             {/* </ScrollView> */}
