@@ -18,6 +18,7 @@ import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
+import { CenterFocusStrong } from "@material-ui/icons";
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
@@ -253,9 +254,12 @@ const SettingsPage = ({ navigation }) => {
     return (
             <View style={styles.container}>
                 <StatusBar backgroundColor='#009387' barStyle="light-content" />
-                <View style={styles.header}>
-                    <Text style={styles.text_header}>My account</Text>
+                <View>
+                    <Text style={styles.text_header2}>My account</Text>
                 </View>
+                {/* <View style={styles.header}>
+                    <Text style={styles.text_header}>My account</Text>
+                </View> */}
                 <View>
                     <Image
                         source={{ uri: url   }}
@@ -441,6 +445,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingBottom: 30,
     },
+
+
+
+
     footer: {
         flex: 6,
         backgroundColor: '#fff',
@@ -454,6 +462,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 30
     },
+
+    text_header2: {
+        alignItems: 'center', 
+        marginLeft: 120,
+        fontWeight: 'bold',
+        fontSize: 30,
+    },
+
+
     text_footer: {
         color: '#05375a',
         fontSize: 18

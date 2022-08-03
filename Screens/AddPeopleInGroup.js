@@ -69,7 +69,7 @@ const AddPeopleInGroup = ({ navigation, route }) => {
 
                 // }}>
                     <TouchableOpacity onPress={generateGroup}>
-                        <Text style={{ marginTop: 35, width: 100, marginRight: 140,textAlign:'right' }}>Create Group</Text>
+                        <Text style={{ marginTop: 5, marginRight: 5,textAlign:'right', fontSize: 18, }}>CREATE </Text>
                     </TouchableOpacity>
 
                 // </View>

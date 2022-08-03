@@ -167,7 +167,7 @@ const HomePage = ({ navigation,route }) => {
                 <Stack.Screen options={{headerShown:false}} name="Register" component={Registration}/>
                 <Stack.Screen options={{headerShown:false}} name="ForgotPassword" component={ForgotPasswordPage}/>
                 <Stack.Screen options={{headerShown:false}} name="OtherUserDetails" component={OtherUserDetailsPage}/>
-                <Stack.Screen options={{headerShown:false}} name="AddContact" component={AddContact}/>
+                <Stack.Screen options={{headerShown:true}} name="AddContact" component={AddContact}/>
                 <Stack.Screen options={{headerShown:false}} name="CreateGroupName" component={CreateGroupName}/>
                 <Stack.Screen options={{headrerShown:false}}name="AddPeopleInGroup" component={AddPeopleInGroup}/>
                 

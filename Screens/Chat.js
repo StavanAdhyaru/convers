@@ -426,6 +426,8 @@ const Chat = ({ navigation, route }) => {
     }
 
     const onSend = useCallback(async (messages = []) => {
+        setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+
         console.log('messages: ', messages);
 
         // let chatId = await getChatId(loggedInUserId, userId);
