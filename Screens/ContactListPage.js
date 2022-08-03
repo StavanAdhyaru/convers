@@ -2,8 +2,6 @@ import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
     PostTime,
@@ -13,23 +11,14 @@ import {
 import { Animated } from 'react-native';
 import {
     View,
-    Text,
     TouchableOpacity,
     TextInput,
-    Platform,
-    StyleSheet,
-    Pressable, 
-    StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image, FlatList, Menu
+    StyleSheet, Image, FlatList
 } from 'react-native';
-import { getUserDetails, getAllUsers,getGroupDetails } from '../API/user';
+import { getUserDetails,getGroupDetails } from '../API/user';
 import { getChat } from '../API/chat';
 import { auth, fireDB } from '../firebase';
 import { useEffect, useState } from 'react';
-import { AsyncStorage } from 'react-native';
-// import Icon from 'react-native-ico-material-design';
 import Feather from 'react-native-vector-icons/Feather';
 import { useIsFocused } from "@react-navigation/native";
 
@@ -184,12 +173,12 @@ const ContactListPage = ({ navigation, route }) => {
                         <UserInfo>
 
                             <Image
-                                source={{ uri: item.userData.profileImageUrl }}
+                                source={{ uri: item.userData ? item.userData.profileImageUrl : "" }}
                                 style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
                             />
                             <TextSection>
                                 <UserInfoText>
-                                    <UserName>{item.userData.name}</UserName>
+                                    <UserName>{item.userData ? item.userData.name : ""}</UserName>
                                     {
                                         item.chatData[0] != null  ? <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime> : <PostTime></PostTime>
                                     }

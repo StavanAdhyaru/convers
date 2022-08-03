@@ -5,28 +5,17 @@ import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
-    PostTime,
-    MessageText,
     TextSection,
 } from './Styles/MessageStyles';
 import {
     View,
-    Text,
     TouchableOpacity,
     TextInput,
-    Platform,
-    StyleSheet,
-    Pressable,
-    StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image, FlatList, Menu
+    StyleSheet, Image
 } from 'react-native';
-import { getUserDetails, findUserByEmail } from '../API/user';
+import { getUserDetails } from '../API/user';
 
 
 const AddContact = ({ navigation, route }) => {

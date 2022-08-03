@@ -7,8 +7,6 @@ import {
     Platform,
     StyleSheet,
     StatusBar,
-    Alert,
-    Button,
     Dimensions, Image
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
@@ -115,7 +113,7 @@ const CreateGroupName = ({navigation,route}) => {
             console.log('new url: ', tempUrl);
             setData({
                 ...data,
-                groupImageUrl: tempUrl
+                groupImageUrl: url
             });
             
         } catch (error) {
@@ -125,7 +123,7 @@ const CreateGroupName = ({navigation,route}) => {
 
     return(
         <View style={styles.container}>
-            <StatusBar backgroundColor='#009387' barStyle="light-content" />
+            <StatusBar backgroundColor='#0bb4e3' barStyle="light-content" />
             <View style={styles.header}>
                 <Text style={styles.text_header}>Create New Group!</Text>
             </View>
@@ -194,7 +192,7 @@ const CreateGroupName = ({navigation,route}) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#009387'
+        backgroundColor: '#0bb4e3'
     },
     header: {
         flex: 1,

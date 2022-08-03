@@ -9,7 +9,6 @@ import {
     StyleSheet,
     StatusBar,
     Alert,
-    Button,
     ScrollView,
     Dimensions, Image
 } from 'react-native';

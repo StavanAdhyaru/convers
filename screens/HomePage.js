@@ -17,10 +17,8 @@ import Chat from './Chat';
 import ChangePasswordScreen from './ChangePassword';
 import Registration from './registration';
 import ForgotPasswordPage from './ForgotPasswordPage';
-import {setUserStatus,getSingleUserData,getMultipleChats, savePushNotificationToken} from '../API/user'
-import { UserImg } from "./Styles/MessageStyles";
+import {setUserStatus, savePushNotificationToken} from '../API/user'
 import {getContactslist} from "../API/contacts";
-import { Snackbar } from "react-native-paper";
 import OtherUserDetailsPage from "./OtherUserDetailsPage";
 import AddContact from "./addContact";
 import CreateGroupName from "./CreateGroupName";

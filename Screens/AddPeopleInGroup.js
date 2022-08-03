@@ -2,12 +2,8 @@ import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
-    PostTime,
-    MessageText,
     TextSection,
 } from './Styles/MessageStyles';
 import { Animated } from 'react-native';
@@ -17,21 +13,13 @@ import {
     Text,
     TouchableOpacity,
     TextInput,
-    Platform,
-    StyleSheet,
-    Pressable,
-    StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image, FlatList, Menu
+    StyleSheet,Image, FlatList
 } from 'react-native';
 import { getUserDetails, getAllUsers } from '../API/user';
 import { auth, fireDB } from '../firebase';
 import { useEffect, useState,useLayoutEffect } from 'react';
-import { getChat,storeChatForGroup } from '../API/chat';
-// import Icon from 'react-native-ico-material-design';
 import Feather from 'react-native-vector-icons/Feather';
-import { useRadioGroup } from '@material-ui/core';
+
 
 
 const AddPeopleInGroup = ({ navigation, route }) => {
@@ -89,7 +77,8 @@ const AddPeopleInGroup = ({ navigation, route }) => {
             name: groupName,
             profileImageUrl: groupImageUrl,
             chatID: chatId,
-            usersList: tempArray
+            usersList: tempArray,
+            createdBy: currentUserId
         })
         storeChatIdtoUser(chatId);
     }

@@ -1,38 +1,29 @@
-import React, { useEffect, useCallback, useState, useLayoutEffect, FC } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image, TextInput,DevSettings } from 'react-native';
+import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import {
     UserImgWrapper, UserImg
 } from './Styles/MessageStyles';
 import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { createChat, getChat, storeChat } from '../API/chat';
-import { getUserDetails, addChatId, getChatId } from '../API/user';
+
+import { getChat, storeChat } from '../API/chat';
+import { addChatId } from '../API/user';
 import { auth, fireDB, storage } from '../firebase';
-import { BackgroundImage } from 'react-native-elements/dist/config';
 import { IconButton, Snackbar } from 'react-native-paper';
-// import { Actions } from 'react-native-router-flux';
-// import ImagePicker from 'react-native-image-picker';
 import axios from 'axios';
-// import { encryption, decryption } from '../API/AES';
 import * as ImagePicker from 'expo-image-picker';
 import { useIsFocused } from "@react-navigation/native";
-import {v4 as uuidv4} from 'uuid';
+
 
 import {
-    MaterialCommunityIcons,
-    MaterialIcons,
     FontAwesome5,
     Entypo,
-    Fontisto,
+    
 } from '@expo/vector-icons';
-import Font from 'expo';
-import moment from 'moment';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { encryption,decryption } from '../API/AES';
-// import { HeaderBackButton } from 'react-navigation';
+
 
 const Chat = ({ navigation, route }) => {
     const isFocused = useIsFocused();
@@ -113,7 +104,44 @@ const Chat = ({ navigation, route }) => {
     useEffect(() => {
 
         console.log("Is a group", isGroup);
-        getRecepientDataFromDb();
+        // getRecepientDataFromDb();
+
+
+        try{
+            if(isGroup){
+                console.log("User Id at Chat.js ",userId)
+                fireDB.collection('groups').doc(userId).onSnapshot((snapshot) => {
+                    let gData = snapshot.data();
+                    setGroupData({
+                        ...gData
+                    })
+                });
+            }else{
+                fireDB.collection('users').doc(userId).onSnapshot((snapshot) => {
+                   
+                        let userData = snapshot.data();
+                        console.log("Getting data of other user here first: ",snapshot.data());
+                        setReceipentData({
+                            ...userData
+                        })
+                        console.log("setting recepient Status")
+                        setReceipentStatus(receipentData.status);
+                        setReceiversToken(userData.pushToken);
+                });
+            }
+        }catch(error){
+            console.log(error);
+        }
+
+
+
+
+
+
+
+
+
+
         const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot(async (querySnapshot) => {
             let allChats = [];
             let response = await getChat(chatId);

@@ -10,12 +10,10 @@ import {
     StyleSheet,
     StatusBar,
     Alert,
-    Button,
-    Dimensions, Image
+    Dimensions 
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;

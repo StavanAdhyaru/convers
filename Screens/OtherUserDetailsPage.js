@@ -8,12 +8,9 @@ import {
     Platform,
     StyleSheet,
     StatusBar,
-    Alert,
-    Button,
     ScrollView,
     Dimensions, Image
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
