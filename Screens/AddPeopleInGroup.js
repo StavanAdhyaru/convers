@@ -11,7 +11,7 @@ import {
     TextSection,
 } from './Styles/MessageStyles';
 import { Animated } from 'react-native';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import {
     View,
     Text,
@@ -19,19 +19,12 @@ import {
     TextInput,
     Platform,
     StyleSheet,
-    Pressable,
-    StatusBar,
-    Alert,
-    Button,
     Dimensions, Image, FlatList, Menu
 } from 'react-native';
-import { getUserDetails, getAllUsers } from '../API/user';
-import { auth, fireDB } from '../firebase';
-import { useEffect, useState,useLayoutEffect } from 'react';
-import { getChat,storeChatForGroup } from '../API/chat';
-// import Icon from 'react-native-ico-material-design';
+import { getUserDetails, getAllUsers } from '../Helpers/User';
+import { auth, fireDB } from '../Firebase';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
-import { useRadioGroup } from '@material-ui/core';
 
 
 const AddPeopleInGroup = ({ navigation, route }) => {
@@ -42,41 +35,39 @@ const AddPeopleInGroup = ({ navigation, route }) => {
     const currentUserId = auth.currentUser.uid;
     let newUserData = [];
     let usersInGroup = [];
-    const [usersInGroupState,setUsersInGroupState] = useState([]);
+    const [usersInGroupState, setUsersInGroupState] = useState([]);
     let userIdsInGroup = [];
-    const [refresh,setRefresh] = useState(false);
+    const [refresh, setRefresh] = useState(false);
     const groupName = route.params.groupName;
     const groupImageUrl = route.params.groupImageUrl;
     const groupId = route.params.groupId;
-
-    
-    const[tempUserIdState,setTempUserIdState] = useState([])
+    const [tempUserIdState, setTempUserIdState] = useState([])
 
     useEffect(() => {
         readUser();
         getAllUsersFromDB();
 
     }, []);
+
     useLayoutEffect(() => {
 
         navigation.setOptions({
             title: "Add Contacts",
             headerStyle: { backgroundColor: '#009387' },
             headerRight: () => (
-                    <TouchableOpacity onPress={generateGroup}>
-                        <Text style={{ marginTop: 35, width: 100, marginRight: 140,textAlign:'right' }}>Create Group</Text>
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={generateGroup}>
+                    <Text style={{ marginTop: 35, width: 100, marginRight: 140, textAlign: 'right' }}>Create Group</Text>
+                </TouchableOpacity>
             )
         })
     }, [navigation]);
 
     const generateGroup = async () => {
         let chatID = uuidv4();
-        console.log("Created Chat Id",chatID);
+        console.log("Created Chat Id", chatID);
         console.log("Group Name", groupName);
         console.log("Group Id", groupId);
         console.log("userse In Group", usersInGroupState);
-        // await storeChatForGroup(chatID,currentUserId);
         await createGroup(chatID);
 
     }
@@ -84,7 +75,7 @@ const AddPeopleInGroup = ({ navigation, route }) => {
     const createGroup = async (chatId) => {
         const tempArray = tempUserIdState;
         tempArray.push(currentUserId);
-        console.log("Temp Array ",tempArray);
+        console.log("Temp Array ", tempArray);
         await fireDB.collection('groups').doc(groupId).set({
             name: groupName,
             profileImageUrl: groupImageUrl,
@@ -94,8 +85,7 @@ const AddPeopleInGroup = ({ navigation, route }) => {
         storeChatIdtoUser(chatId);
     }
 
-    const storeChatIdtoUser = async (chatID) =>  {
-        // for(let i=0; i<tempUserIdState.length ;i++){
+    const storeChatIdtoUser = async (chatID) => {
         tempUserIdState.forEach(async (userId) => {
             console.log("Adding");
             console.log(userId);
@@ -104,8 +94,7 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                 isGroup: true
             })
         })
-            
-        // }
+
         await fireDB.collection('users').doc(currentUserId).collection('chatIdList').doc(groupId).set({
             chatId: chatID,
             isGroup: true
@@ -133,9 +122,9 @@ const AddPeopleInGroup = ({ navigation, route }) => {
             const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
                 const eachUser = doc.data();
                 eachUser.id = doc.id;
-                if(eachUser.isGroup){
+                if (eachUser.isGroup) {
 
-                }else{
+                } else {
                     if (doc.id === currentUserId) {
 
                     } else {
@@ -146,7 +135,7 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                         setAllUsers(newUserData);
                     }
                 }
-                
+
             })
         })
     }
@@ -170,16 +159,12 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                     size={20}
                 />
 
-
-
-                {/* SearchIcon = <SearchIcon/> */}
                 <TextInput style={styles.searchText}
                     placeholder="Search Friend"
                     placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)
                     }}
-                // style={{ fontSize: 18 }}
                 />
 
             </View>
@@ -193,21 +178,21 @@ const AddPeopleInGroup = ({ navigation, route }) => {
 
                             const tempArray = allUsers;
                             console.log("Pressed")
-                            
 
-                            if(tempUserIdState.includes(item.id)){
+
+                            if (tempUserIdState.includes(item.id)) {
                                 setTempUserIdState(current => current.filter(tempUserId => {
                                     return tempUserId != item.id;
                                 }))
-                            }else{
+                            } else {
                                 const tempUsersListInGroup = tempUserIdState;
                                 tempUsersListInGroup.push(item.id);
                                 setTempUserIdState(tempUsersListInGroup);
                             }
-                            
+
                             console.log(tempUserIdState);
-                            
-                           
+
+
                         }}
                     >
                         <UserInfo>

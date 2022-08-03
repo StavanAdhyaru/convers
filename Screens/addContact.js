@@ -1,32 +1,22 @@
-import { auth, fireDB } from '../firebase';
+import { auth, fireDB } from '../Firebase';
 import { useEffect, useState } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
-    PostTime,
-    MessageText,
     TextSection,
 } from './Styles/MessageStyles';
 import {
     View,
-    Text,
     TouchableOpacity,
     TextInput,
-    Platform,
     StyleSheet,
-    Pressable,
-    StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image, FlatList, Menu
+    Image
 } from 'react-native';
-import { getUserDetails, findUserByEmail } from '../API/user';
+import { getUserDetails, findUserByEmail } from '../Helpers/User';
 
 
 const AddContact = ({ navigation, route }) => {
@@ -34,11 +24,7 @@ const AddContact = ({ navigation, route }) => {
     const currentUserId = auth.currentUser.uid;
     const [searchEmailId, setSearchEmailId] = useState("");
     const [foundUser, setFoundUser] = useState([]);
-    const [foundUserId, setFoundUserId] = useState("");
-    const [a, setA] = useState([]);
     const foundUsers = []
-
-
 
     useEffect(() => {
         readUser();
@@ -60,48 +46,15 @@ const AddContact = ({ navigation, route }) => {
                 if (doc.id == currentUserId) {
                     return;
                 }
-                // console.log(doc.id, '=>', doc.data());
                 foundUsers.push(doc.data());
                 foundUsers[foundUsers.length - 1].id = doc.id
                 setFoundUser(foundUsers);
-                // setA(foundUsers);
-                // setFoundUser(foundUsers[foundUsers.length-1]);
-                // setFoundUserId(doc.id);
                 foundUsers.empty;
                 console.log("Found User", foundUsers[foundUsers.length - 1]);
             });
         });
 
     }
-    // const getAlredyUser = async () => {
-
-    //     fireDB.collection('users').doc(auth.currentUser.uid).collection("chatIdList").onSnapshot((querySnapshot) => {
-    //         const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
-    //             const eachUser = doc.data();
-    //             eachUser.id = doc.id;
-    //             userData.push(eachUser.id);
-
-    //         });
-
-    //     })
-    // }
-    // const getAllUsersFromDB = async () => {
-    //     fireDB.collection('users').onSnapshot((querySnapshot) => {
-    //         const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
-    //             const eachUser = doc.data();
-    //             eachUser.id = doc.id;
-    //             if (userData.includes(doc.id)) {
-
-    //             } else if (doc.id === currentUserId) {
-
-    //             } else {
-    //                 eachUser.userData = await getUserDetails(doc.id);
-    //                 newUserData.push(eachUser);
-    //                 setAllUsers(newUserData);
-    //             }
-    //         })
-    //     })
-    // }
 
     return (
         <Container>
@@ -122,38 +75,9 @@ const AddContact = ({ navigation, route }) => {
                 </TouchableOpacity>
 
             </View>
-            {/* <FlatList
-                extraData={a}
-                data={a}
-                renderItem={({ item }) => (
-                    <Card onPress={() => navigation.navigate('Chat', {
-                        // userId: item.id,
-                        // loggedInUserId: currentUserId,
-                        // name: currentUser.name,
-                        // avatar: currentUser.profileImageUrl,
-                        // receipentName: item.userData.name,
-                        // receipentProfileImage: item.userData.profileImageUrl
-                    })}>
-                        <UserInfo>
 
-                            <Image
-                                source={{ uri: item.profileImageUrl }}
-                                style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
-                            />
-                            <TextSection>
-                                <UserInfoText>
-                                    <UserName>{item.name}</UserName>
-                                </UserInfoText>
-                            </TextSection>
-                        </UserInfo>
-                    </Card>
-                )}
-                keyExtractor={(item) => item.id}
-            /> */}
-
-
-            <Card 
-                onPress = {() => navigation.navigate('Chat', {
+            <Card
+                onPress={() => navigation.navigate('Chat', {
                     userId: foundUser[0].id,
                     loggedInUserId: currentUserId,
                     name: currentUser.name,
@@ -164,19 +88,19 @@ const AddContact = ({ navigation, route }) => {
             >
                 <UserInfo>
                     {
-                        foundUser.length>0 ? <View>
-                        <Image
-                            source={{ uri: foundUser[0].profileImageUrl }}
-                            style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
-                        />
-                        <TextSection>
-                            <UserInfoText>
-                                <UserName>{foundUser[0].name}</UserName>
-                            </UserInfoText>
-                        </TextSection>
+                        foundUser.length > 0 ? <View>
+                            <Image
+                                source={{ uri: foundUser[0].profileImageUrl }}
+                                style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
+                            />
+                            <TextSection>
+                                <UserInfoText>
+                                    <UserName>{foundUser[0].name}</UserName>
+                                </UserInfoText>
+                            </TextSection>
                         </View> : <View></View>
                     }
-                    
+
                 </UserInfo>
             </Card>
         </Container>

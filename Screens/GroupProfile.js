@@ -1,4 +1,4 @@
-import { auth, fireDB, storage } from "../firebase";
+import { auth, fireDB, storage } from "../Firebase";
 import { useState, useEffect } from 'react';
 import { useIsFocused } from "@react-navigation/native";
 import {
@@ -12,7 +12,7 @@ import {
     Alert,
     Button,
     ScrollView,
-    Dimensions, Image,FlatList
+    Dimensions, Image, FlatList
 } from 'react-native';
 import {
     Card,
@@ -30,11 +30,10 @@ import Feather from 'react-native-vector-icons/Feather';
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
-const GroupProfile = ({navigattion,route}) => {
+const GroupProfile = ({ navigattion, route }) => {
 
-    const {groupId} = route.params;
-    // const {groupData} = route.params;
-    const [groupData,setGroupData] = useState({
+    const { groupId } = route.params;
+    const [groupData, setGroupData] = useState({
         name: '',
         profileImageUrl: '',
         usersList: [],
@@ -46,115 +45,100 @@ const GroupProfile = ({navigattion,route}) => {
 
     useEffect(() => {
         console.log("Group Id", groupId);
-        console.log("Group Data in Group Profile",groupData);
+        console.log("Group Data in Group Profile", groupData);
         let tempUsers = [];
         fireDB.collection('groups').doc(groupId).onSnapshot((snapshot) => {
             let gData = snapshot.data();
-                setGroupData({
-                    ...gData
-                })
+            setGroupData({
+                ...gData
+            })
 
             gData.usersList.forEach((userId) => {
-                    fireDB.collection('users').doc(userId).onSnapshot((snapshot1) => {
-                    console.log("Snapshot value ",snapshot1.data());
+                fireDB.collection('users').doc(userId).onSnapshot((snapshot1) => {
+                    console.log("Snapshot value ", snapshot1.data());
                     tempUsers.push(snapshot1.data());
                     setUserData(tempUsers);
                 })
             })
-        
+
         })
-        
-       
-        // getGroupInfo();
-        // getUsersDetails();
-    },[isFocused]);
+    }, [isFocused]);
 
-    const getGroupInfo = async () =>{
-        
-    }
-
-    const getUsersDetails = async () => {
-        
-    }
-
-    return(
+    return (
         <View style={styles.container}>
-        <StatusBar backgroundColor='#009387' barStyle="light-content" />
-        <View>
-            <Image
-                source={{ uri: groupData.profileImageUrl }}
-                alt = {require(`../assets/default-user-image.png`)}
-                style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
-            />
-        </View>
-        {/* <ScrollView> */}
-        <Animatable.View
-            animation='fadeInUpBig'
-            style={styles.footer}
-        >
-            {/* Name */}
-            <Text style={styles.text_footer}>Name</Text>
-            <View style={styles.action}>
-                <FontAwesome
-                    name="user-o"
-                    color="#05375a"
-                    size={20}
-                />
-                <TextInput
-                    placeholder="Your Name"
-                    style={styles.textInput}
-                    autoCapitalize="none"
-                    value={groupData.name}
-                    editable={false}
+            <StatusBar backgroundColor='#009387' barStyle="light-content" />
+            <View>
+                <Image
+                    source={{ uri: groupData.profileImageUrl }}
+                    alt={require(`../assets/default-user-image.png`)}
+                    style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
                 />
             </View>
-            {/* Email */}
-            <Text style={[styles.text_footer, {
-                marginTop: 15
-            }]}>Participents</Text>
-            <FlatList
-                extraData={userData}
-                data={userData}
-                renderItem={({ item }) => (
-                    <Card>
-                        <UserInfo>
-                            <Image
-                                source={{ uri: item.profileImageUrl }}
-                                style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
-                            />
-                            <TextSection>
-                                <UserInfoText>
-                                    <UserName>{item.name}</UserName>    
-                                </UserInfoText>
-                            </TextSection>
-                        </UserInfo>
-                    </Card>
-                )}
-                keyExtractor={(item) => item.id}
-            />
-            
-        
-            <View style={styles.button}>
-                <LinearGradient
-                    colors={['#FF0000', '#FF0000']}
-                    style={styles.deleteAccount}
-                >
-                    <TouchableOpacity 
-                        // onPress={deleteConversation}
-                    >
-                        <Text style={[styles.textSign, {
-                            color: '#fff'
-                        }]}>Delete Conversation</Text>
-                    </TouchableOpacity>
-                </LinearGradient>
-            </View>
-            {/* Sign out account Button */}
-            
+            {/* <ScrollView> */}
+            <Animatable.View
+                animation='fadeInUpBig'
+                style={styles.footer}
+            >
+                {/* Name */}
+                <Text style={styles.text_footer}>Name</Text>
+                <View style={styles.action}>
+                    <FontAwesome
+                        name="user-o"
+                        color="#05375a"
+                        size={20}
+                    />
+                    <TextInput
+                        placeholder="Your Name"
+                        style={styles.textInput}
+                        autoCapitalize="none"
+                        value={groupData.name}
+                        editable={false}
+                    />
+                </View>
+                {/* Email */}
+                <Text style={[styles.text_footer, {
+                    marginTop: 15
+                }]}>Participents</Text>
+                <FlatList
+                    extraData={userData}
+                    data={userData}
+                    renderItem={({ item }) => (
+                        <Card>
+                            <UserInfo>
+                                <Image
+                                    source={{ uri: item.profileImageUrl }}
+                                    style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
+                                />
+                                <TextSection>
+                                    <UserInfoText>
+                                        <UserName>{item.name}</UserName>
+                                    </UserInfoText>
+                                </TextSection>
+                            </UserInfo>
+                        </Card>
+                    )}
+                    keyExtractor={(item) => item.id}
+                />
 
-            
-        </Animatable.View>
-        {/* </ScrollView> */}
-    </View>
+                <View style={styles.button}>
+                    <LinearGradient
+                        colors={['#FF0000', '#FF0000']}
+                        style={styles.deleteAccount}
+                    >
+                        <TouchableOpacity
+                        // onPress={deleteConversation}
+                        >
+                            <Text style={[styles.textSign, {
+                                color: '#fff'
+                            }]}>Delete Conversation</Text>
+                        </TouchableOpacity>
+                    </LinearGradient>
+                </View>
+                {/* Sign out account Button */}
+
+            </Animatable.View>
+            {/* </ScrollView> */}
+        </View>
     );
 }
 const styles = StyleSheet.create({

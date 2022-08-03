@@ -15,11 +15,11 @@ import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import { auth, fireDB } from '../firebase';
+import { auth, fireDB } from '../Firebase';
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
-const Registration = ({navigation,route}) => {
+const Registration = ({ navigation, route }) => {
 
     const dbRef = fireDB.collection('users');
     const [data, setData] = useState({
@@ -193,21 +193,15 @@ const Registration = ({navigation,route}) => {
                             profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/convers-e6df7.appspot.com/o/default-user-image.png?alt=media&token=b6912cc0-8e38-4dd9-8ba4-c6f967430c43"
                         });
                         userCredentials.user.sendEmailVerification();
-                        // auth.signOut();
                         setDefaults();
                         alert("Varification Email sent");
                         navigation.replace("Home");
-                        // console.log("Registered in with ", user.email);
-                        
 
-                        // Alert.alert('Success', 'You are successfully registered', [{ text: 'OK' }]);
-                        
                     })
                     .catch(error => {
                         console.log(error);
                     });
 
-                // navigation.navigate('Home');
             }
             else {
                 Alert.alert('Error', 'Password is not matched', [{ text: 'OK' }]);
@@ -220,7 +214,6 @@ const Registration = ({navigation,route}) => {
 
     return (
         <View style={styles.container}>
-            {/* <Text>Open up App.js to start working on your app!</Text>    */}
             <View style={styles.header}>
                 <Text style={styles.text_header}>Registration!</Text>
             </View>
@@ -484,4 +477,3 @@ const styles = StyleSheet.create({
 });
 
 export default Registration;
-  

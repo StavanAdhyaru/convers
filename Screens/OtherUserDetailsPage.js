@@ -1,4 +1,4 @@
-import { auth, fireDB, storage } from "../firebase";
+import { auth, fireDB, storage } from "../Firebase";
 import { useState, useEffect } from 'react';
 import {
     View,
@@ -8,29 +8,23 @@ import {
     Platform,
     StyleSheet,
     StatusBar,
-    Alert,
-    Button,
     ScrollView,
     Dimensions, Image
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import {deleteChat} from '../API/chat';
-
-
-
+import { deleteChat } from '../Helpers/Chat';
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
 
-const OtherUserDetailsPage = ({navigattion,route}) => {
-    const {otherUserId} = route.params;
+const OtherUserDetailsPage = ({ navigattion, route }) => {
+    const { otherUserId } = route.params;
     const chatId = route.params.chatId;
-    const [otherUserData,setOtherUserData] = useState({
+    const [otherUserData, setOtherUserData] = useState({
         name: '',
         email: '',
         contactNumber: '',
@@ -39,8 +33,7 @@ const OtherUserDetailsPage = ({navigattion,route}) => {
 
     useEffect(() => {
         getUserDataFromDB();
-    },[]);
-
+    }, []);
 
     const getUserDataFromDB = async () => {
         try {
@@ -53,34 +46,34 @@ const OtherUserDetailsPage = ({navigattion,route}) => {
             setOtherUserData({
                 ...userData
             })
-            
+
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
     const deleteConversation = async () => {
-        console.log("Deletion of Chat Id: ",chatId)
-        try{
+        console.log("Deletion of Chat Id: ", chatId)
+        try {
             deleteChat(chatId);
         }
-        catch(error){
+        catch (error) {
             console.log(error)
         }
 
     }
-    return(
+    return (
 
         <View style={styles.container}>
-                <StatusBar backgroundColor='#009387' barStyle="light-content" />
-                <View>
-                    <Image
-                        source={{ uri: otherUserData.profileImageUrl }}
-                        alt = {require(`../assets/default-user-image.png`)}
-                        style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
-                    />
-                </View>
-                <ScrollView>
+            <StatusBar backgroundColor='#009387' barStyle="light-content" />
+            <View>
+                <Image
+                    source={{ uri: otherUserData.profileImageUrl }}
+                    alt={require(`../assets/default-user-image.png`)}
+                    style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
+                />
+            </View>
+            <ScrollView>
                 <Animatable.View
                     animation='fadeInUpBig'
                     style={styles.footer}
@@ -139,16 +132,16 @@ const OtherUserDetailsPage = ({navigattion,route}) => {
                         />
                     </View>
                     {/* Edit/Save account Button */}
-                    
+
                     {/* Change Password Button */}
-                    
+
                     {/* Delete account Button */}
                     <View style={styles.button}>
                         <LinearGradient
                             colors={['#FF0000', '#FF0000']}
                             style={styles.deleteAccount}
                         >
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={deleteConversation}
                             >
                                 <Text style={[styles.textSign, {
@@ -158,14 +151,14 @@ const OtherUserDetailsPage = ({navigattion,route}) => {
                         </LinearGradient>
                     </View>
                     {/* Sign out account Button */}
-                    
 
-                    
+
+
                 </Animatable.View>
-                </ScrollView>
-            </View>
+            </ScrollView>
+        </View>
     )
-    
+
 
 }
 

@@ -1,4 +1,4 @@
-import { auth, fireDB, storage } from "../firebase";
+import { auth, fireDB, storage } from "../Firebase";
 import { useState, useEffect } from 'react';
 import {
     View,
@@ -71,16 +71,16 @@ const SettingsPage = ({ navigation }) => {
                 ...userData
             })
             setUrl(userData.profileImageUrl);
-            
+
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
     const saveUserDataAfterEdit = async () => {
         try {
             let userId = auth.currentUser.uid;
-            
+
             let userSaved = await fireDB.collection("users").doc(userId).update({
                 // ...userData,
                 name: data.name,
@@ -89,11 +89,11 @@ const SettingsPage = ({ navigation }) => {
             console.log("User saved:: ", userSaved);
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
     const editSaveMode = () => {
-        if(isEditMode) {
+        if (isEditMode) {
             // save
             saveUserDataAfterEdit();
             setIsEditMode(false);
@@ -103,7 +103,7 @@ const SettingsPage = ({ navigation }) => {
         }
     }
     const handleNameChange = (val) => {
-        if(isEditMode) {
+        if (isEditMode) {
             setData({
                 ...data,
                 name: val,
@@ -113,7 +113,7 @@ const SettingsPage = ({ navigation }) => {
         }
     }
     const handleContactNumberChange = (val) => {
-        if(isEditMode) {
+        if (isEditMode) {
             setData({
                 ...data,
                 contactNumber: val,
@@ -121,41 +121,17 @@ const SettingsPage = ({ navigation }) => {
             })
         }
     }
-    const handleAddressChange = (val) => {
-        if(isEditMode) {
-            setData({
-                ...data,
-                address: val,
-                check_addressInputChange: true
-            })
-        }
-    }
-    const validate = () => {
-        try {
-            if (data.check_nameInputChange && data.check_contactNumberInputChange && data.check_addressInputChange) {
-                return true;
-            }
-            else {
-                Alert.alert('Error', 'Please enter all the details', [{ text: 'OK' }]);
-                return false;
-            }
-            
-        } catch (error) {
-            console.log('error: ', error);
-            
-        }
-    }
     const deleteAccountFromDB = async () => {
         try {
             let userId = auth.currentUser.uid;
             await fireDB.collection("Users").doc(userId).delete();
             await auth.currentUser.delete();
-            Alert.alert("Success","Account deleted successfully",[{ text: 'OK' }])
+            Alert.alert("Success", "Account deleted successfully", [{ text: 'OK' }])
             navigateToSignInScreen();
-            
+
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
     const navigateToSignInScreen = () => {
@@ -163,7 +139,7 @@ const SettingsPage = ({ navigation }) => {
     }
 
     const uploadPhoto = (image) => {
-        return new Promise( async (resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 // upload
                 console.log('image argument:: ', image.uri);
@@ -172,7 +148,7 @@ const SettingsPage = ({ navigation }) => {
                 var ref = storage.ref("images/").child(`${currentUser.uid}`);
                 console.log("_____________________LOADING...____________________");
                 resolve(ref.put(blob));
-                
+
             } catch (error) {
                 console.log('error: ', error);
                 reject(error);
@@ -189,28 +165,27 @@ const SettingsPage = ({ navigation }) => {
             console.log('new url: ', tempUrl);
 
             await updateUserDoc(tempUrl);
-            
+
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
 
     const updateUserDoc = async (tempUrl) => {
         try {
             // update user document
-
             console.log('updating url: ', tempUrl);
-            let dbResponse = await fireDB.collection("users").doc(`${currentUser.uid}`).update({profileImageUrl: tempUrl});
+            let dbResponse = await fireDB.collection("users").doc(`${currentUser.uid}`).update({ profileImageUrl: tempUrl });
             console.log('dbResponse: ', dbResponse);
             setData({
                 ...data,
                 profileImageUrl: url
             });
-            
+
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
 
@@ -224,9 +199,9 @@ const SettingsPage = ({ navigation }) => {
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 1
-              });
-          
-            if (!result.cancelled) {  
+            });
+
+            if (!result.cancelled) {
                 console.log('result: ', result.uri);
                 setPhoto(result);
 
@@ -239,40 +214,38 @@ const SettingsPage = ({ navigation }) => {
             }
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
 
-    
-
-
-    useEffect( () => {
+    useEffect(() => {
         console.log("in useEffect");
         getUserDataFromDB();
     }, [])
+
     return (
-            <View style={styles.container}>
-                <StatusBar backgroundColor='#009387' barStyle="light-content" />
-                <View style={styles.header}>
-                    <Text style={styles.text_header}>My account</Text>
-                </View>
-                <View>
-                    <Image
-                        source={{ uri: url   }}
-                        alt = {require(`../assets/default-user-image.png`)}
-                        style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
-                    />
-                    <View style={styles.button}>
-                    <TouchableOpacity 
+        <View style={styles.container}>
+            <StatusBar backgroundColor='#009387' barStyle="light-content" />
+            <View style={styles.header}>
+                <Text style={styles.text_header}>My account</Text>
+            </View>
+            <View>
+                <Image
+                    source={{ uri: url }}
+                    alt={require(`../assets/default-user-image.png`)}
+                    style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
+                />
+                <View style={styles.button}>
+                    <TouchableOpacity
                         onPress={changeProfileImage}
                     >
                         <Text style={[styles.textSign, {
                             color: '#ECCC01', padding: 10
                         }]}>Change profile image</Text>
                     </TouchableOpacity>
-                    </View>
                 </View>
-                <ScrollView>
+            </View>
+            <ScrollView>
                 <Animatable.View
                     animation='fadeInUpBig'
                     style={styles.footer}
@@ -368,7 +341,7 @@ const SettingsPage = ({ navigation }) => {
                             colors={['#08d4c4', '#01ab9d']}
                             style={styles.deleteAccount}
                         >
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={editSaveMode}
                             >
                                 <Text style={[styles.textSign, {
@@ -383,7 +356,7 @@ const SettingsPage = ({ navigation }) => {
                             colors={['#08d4c4', '#01ab9d']}
                             style={styles.deleteAccount}
                         >
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={changePasswortd}
                             >
                                 <Text style={[styles.textSign, {
@@ -398,7 +371,7 @@ const SettingsPage = ({ navigation }) => {
                             colors={['#FF0000', '#FF0000']}
                             style={styles.deleteAccount}
                         >
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={deleteAccountFromDB}
                             >
                                 <Text style={[styles.textSign, {
@@ -413,7 +386,7 @@ const SettingsPage = ({ navigation }) => {
                             colors={['#08d4c4', '#01ab9d']}
                             style={styles.deleteAccount}
                         >
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={signOut}
                             >
                                 <Text style={[styles.textSign, {
@@ -423,10 +396,10 @@ const SettingsPage = ({ navigation }) => {
                         </LinearGradient>
                     </View>
 
-                    
+
                 </Animatable.View>
-                </ScrollView>
-            </View>
+            </ScrollView>
+        </View>
     );
 }
 const styles = StyleSheet.create({

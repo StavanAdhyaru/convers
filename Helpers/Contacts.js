@@ -1,6 +1,5 @@
 import * as Contacts from 'expo-contacts';
-import { getAllUsers} from './user';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAllUsers } from './User';
 
 const getContactslist = async () => {
     const { status } = await Contacts.requestPermissionsAsync();
@@ -12,7 +11,6 @@ const getContactslist = async () => {
         if (data.length > 0) {
             const contact = data[0];
             console.log(data.length);
-            
             // console.log("Contacts:",contact);
         }
         checkWithFirebaseUsers(data);
@@ -21,19 +19,18 @@ const getContactslist = async () => {
 
 const checkWithFirebaseUsers = async (data) => {
     let allUsers = await getAllUsers();
-    // console.log("From contacts.js users list from firebase ",allUsers);
     let commonUserList = []
-    
-    console.log(typeof(data[0].phoneNumbers[0].number))
-    for(let i=0;i<data.length;i++){
-        for(let j=0;j<allUsers.length;j++){
-            if(data[i].phoneNumbers[0].number === allUsers[j].conatactNumber){
+
+    console.log(typeof (data[0].phoneNumbers[0].number))
+    for (let i = 0; i < data.length; i++) {
+        for (let j = 0; j < allUsers.length; j++) {
+            if (data[i].phoneNumbers[0].number === allUsers[j].conatactNumber) {
                 commonUserList.push(allUsers[j]);
             }
         }
     }
 
-    console.log("Common User List: ",commonUserList.length);
+    console.log("Common User List: ", commonUserList.length);
 }
 
 export { getContactslist };

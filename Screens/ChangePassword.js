@@ -1,4 +1,4 @@
-import { auth } from "../firebase";
+import { auth } from "../Firebase";
 import firebase from 'firebase/app'
 import { useState, useEffect } from 'react';
 import {
@@ -25,7 +25,7 @@ const ChangePasswordScreen = ({ navigation }) => {
         oldPassword: '',
         password: '',
         confirmPassword: '',
-        check_OldPassword:false,
+        check_OldPassword: false,
         check_confirmPasswordInputChange: false,
         check_NewPasswordInputChange: false,
         secureOldTextEntry: true,
@@ -109,8 +109,8 @@ const ChangePasswordScreen = ({ navigation }) => {
     }
 
     const changePass = () => {
-        if(data.check_NewPasswordInputChange && data.check_confirmPasswordInputChange){
-            if(data.password === data.confirmPassword){
+        if (data.check_NewPasswordInputChange && data.check_confirmPasswordInputChange) {
+            if (data.password === data.confirmPassword) {
                 reauthenticate(data.oldPassword).then(() => {
                     var user = auth.currentUser;
                     user.updatePassword(data.password).then(() => {
@@ -119,22 +119,22 @@ const ChangePasswordScreen = ({ navigation }) => {
                         navigation.navigate('Home');
                     }).catch((error) => {
                         console.log(error);
-                        Alert.alert('Error',"Wrong Current Password",[{ text: 'OK' }]);
+                        Alert.alert('Error', "Wrong Current Password", [{ text: 'OK' }]);
                     })
-                }).catch((error) => {console.log(error);})
-            }else{
+                }).catch((error) => { console.log(error); })
+            } else {
                 Alert.alert('Filure', 'Password and confirm password does not match', [{ text: 'OK' }]);
             }
-        }else{
+        } else {
             Alert.alert('Filure', 'Invalid Current Password', [{ text: 'OK' }]);
         }
     }
 
     const reauthenticate = (currentPassword) => {
-        var user  = auth.currentUser;
+        var user = auth.currentUser;
         console.log(user.email)
         console.log(currentPassword)
-        var cred  = firebase.auth.EmailAuthProvider.credential(user.email,currentPassword);
+        var cred = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
         return user.reauthenticateWithCredential(cred);
     }
 
@@ -164,23 +164,23 @@ const ChangePasswordScreen = ({ navigation }) => {
                         style={styles.textInput}
                         secureTextEntry={data.secureOldTextEntry ? true : false}
                         autoCapitalize="none"
-                    onChangeText={(val) => handleOldPasswordChange(val)}
+                        onChangeText={(val) => handleOldPasswordChange(val)}
                     />
                     <TouchableOpacity
-                    onPress={updateOldSecureTextEntry}
+                        onPress={updateOldSecureTextEntry}
                     >
                         {data.secureOldTextEntry ?
-                  <Feather
-                      name="eye-off"
-                      color="grey"
-                      size={20}
-                  />
-                  :
-                  <Feather
-                      name="eye"
-                      color="grey"
-                      size={20}
-                  />}
+                            <Feather
+                                name="eye-off"
+                                color="grey"
+                                size={20}
+                            />
+                            :
+                            <Feather
+                                name="eye"
+                                color="grey"
+                                size={20}
+                            />}
                     </TouchableOpacity>
                 </View>
                 {/* New Password */}
@@ -198,23 +198,23 @@ const ChangePasswordScreen = ({ navigation }) => {
                         style={styles.textInput}
                         secureTextEntry={data.secureNewPasswordEntry ? true : false}
                         autoCapitalize="none"
-                    onChangeText={(val) => handlePasswordChange(val)}
+                        onChangeText={(val) => handlePasswordChange(val)}
                     />
                     <TouchableOpacity
-                    onPress={updateSecureTextEntry}
+                        onPress={updateSecureTextEntry}
                     >
                         {data.secureNewPasswordEntry ?
-                  <Feather
-                      name="eye-off"
-                      color="grey"
-                      size={20}
-                  />
-                  :
-                  <Feather
-                      name="eye"
-                      color="grey"
-                      size={20}
-                  />}
+                            <Feather
+                                name="eye-off"
+                                color="grey"
+                                size={20}
+                            />
+                            :
+                            <Feather
+                                name="eye"
+                                color="grey"
+                                size={20}
+                            />}
                     </TouchableOpacity>
                 </View>
 
@@ -233,23 +233,23 @@ const ChangePasswordScreen = ({ navigation }) => {
                         style={styles.textInput}
                         secureTextEntry={data.secureConfirmPasswordEntry ? true : false}
                         autoCapitalize="none"
-                    onChangeText={(val) => confirmPasswordInputChange(val)}
+                        onChangeText={(val) => confirmPasswordInputChange(val)}
                     />
                     <TouchableOpacity
-                    onPress={updateConfirmSecureTextEntry}
+                        onPress={updateConfirmSecureTextEntry}
                     >
                         {data.secureConfirmPasswordEntry ?
-                  <Feather
-                      name="eye-off"
-                      color="grey"
-                      size={20}
-                  />
-                  :
-                  <Feather
-                      name="eye"
-                      color="grey"
-                      size={20}
-                  />}
+                            <Feather
+                                name="eye-off"
+                                color="grey"
+                                size={20}
+                            />
+                            :
+                            <Feather
+                                name="eye"
+                                color="grey"
+                                size={20}
+                            />}
                     </TouchableOpacity>
                 </View>
                 {/* Change Password Button */}
