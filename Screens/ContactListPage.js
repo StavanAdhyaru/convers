@@ -24,7 +24,7 @@ import {
     Button,
     Dimensions, Image, FlatList, Menu
 } from 'react-native';
-import { getUserDetails, getAllUsers } from '../API/user';
+import { getUserDetails, getAllUsers,getGroupDetails } from '../API/user';
 import { getChat } from '../API/chat';
 import { auth, fireDB } from '../firebase';
 import { useEffect, useState } from 'react';
@@ -91,13 +91,22 @@ const ContactListPage = ({ navigation, route }) => {
             const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
                 const eachUser = doc.data();
                 eachUser.id = doc.id;
-                eachUser.userData = await getUserDetails(doc.id);
+                
+                if(eachUser.isGroup){
+                    eachUser.userData = await getGroupDetails(doc.id);
+                }else{
+                    eachUser.userData = await getUserDetails(doc.id);
+                }
+                
+                
                 eachUser.chatData = await getChat(eachUser.chatId);
-                eachUser.messageCount = eachUser.chatData.length;
-                // console.log("each User",eachUser);
-                console.log('eachUser: ', eachUser);
+                // console.log('eachUser: ', eachUser);
                 userData.push(eachUser);
-                userData = userData.sort((a, b) => b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime());
+                userData = userData.sort((a, b) => {
+                    if(a.chatData[0] != null && b.chatData[0] != null){
+                        b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime()
+                    }
+                    });
                 setAllUsers(userData);
             });
 
@@ -130,9 +139,6 @@ const ContactListPage = ({ navigation, route }) => {
                     color="#009387"
                     size={20}
                 />
-
-
-
                 {/* SearchIcon = <SearchIcon/> */}
                 <TextInput style={styles.searchText}
                     placeholder="Search Friend"
@@ -172,7 +178,8 @@ const ContactListPage = ({ navigation, route }) => {
                         avatar: currentUser.profileImageUrl,
                         receipentName: item.userData.name,
                         receipentProfileImage: item.userData.profileImageUrl,
-                        chatId: item.chatId
+                        chatId: item.chatId,
+                        isGroup: item.isGroup
                     })}>
                         <UserInfo>
 
@@ -183,9 +190,15 @@ const ContactListPage = ({ navigation, route }) => {
                             <TextSection>
                                 <UserInfoText>
                                     <UserName>{item.userData.name}</UserName>
-                                    <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime>
+                                    {
+                                        item.chatData[0] != null  ? <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime> : <PostTime></PostTime>
+                                    }
+                                    
                                 </UserInfoText>
-                                <MessageText>{item.chatData[0].text}</MessageText>
+                                {
+                                        item.chatData[0] != null  ? <MessageText>{item.chatData[0].text}</MessageText> : <MessageText></MessageText>
+                                }
+                                
                             </TextSection>
                         </UserInfo>
                     </Card>

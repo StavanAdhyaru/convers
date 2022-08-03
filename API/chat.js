@@ -37,7 +37,7 @@ const storeChat = (chatId, message, loggedInUserId, isImage) => {
     })
 }
 
-const storeChatForGroup = (chatId) => {
+const storeChatForGroup = (chatId,currentUserId) => {
     return new Promise(async (resolve, reject) => {
         try {
             // if(!chatId) {
@@ -47,6 +47,11 @@ const storeChatForGroup = (chatId) => {
             // }
             // let encryptedText = encryption(loggedInUserId, message.text);
             let result = await chatDBRef.doc(chatId).set({isGroup:true})
+            let result2 = await chatDBRef.doc(chatId).collection('chatData').add({
+                userId: currentUserId,
+                text: "Hello Everyone, I created this group for us.",
+                createdAt: new Date()
+            })
             resolve(chatId);
             
         } catch (error) {
@@ -61,6 +66,7 @@ const getChat = (chatId) => {
             let allChat = chatDBRef.doc(chatId).collection('chatData').onSnapshot((querySnapshot) => {
                 const messagesFromFirestore = querySnapshot.docChanges().map(({doc}) => {
                     const message = doc.data();
+                    console.log("hello here for message details ",message.createdAt.toDate(),message.text);
                     return { 
                         _id: doc.id,    // chatId
                         ...message, 

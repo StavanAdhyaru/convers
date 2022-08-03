@@ -25,6 +25,8 @@ import OtherUserDetailsPage from "./OtherUserDetailsPage";
 import AddContact from "./addContact";
 import CreateGroupName from "./CreateGroupName";
 import AddPeopleInGroup from "./AddPeopleInGroup";
+import GroupProfile from "./GroupProfile";
+
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 const Tab = createBottomTabNavigator();
@@ -170,7 +172,7 @@ const HomePage = ({ navigation,route }) => {
                 <Stack.Screen options={{headerShown:false}} name="AddContact" component={AddContact}/>
                 <Stack.Screen options={{headerShown:false}} name="CreateGroupName" component={CreateGroupName}/>
                 <Stack.Screen options={{headrerShown:false}}name="AddPeopleInGroup" component={AddPeopleInGroup}/>
-                
+                <Stack.Screen options= {{headrerShown:false}}name="GroupProfile" component={GroupProfile}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

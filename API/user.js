@@ -18,6 +18,22 @@ const getUserDetails = async (userId) => {
     })
 }
 
+const getGroupDetails = async (groupId) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const data = fireDB.collection("groups").doc(groupId).get().then((doc) => {
+                resolve(doc.data());
+            }).catch((error) => {
+                reject(error);
+            })
+
+        } catch (error) {
+            console.log('error: ', error);
+
+        }
+    })
+}
+
 // const findUserEmail = async (emailId) => {
 //     return new Promise((resolve, reject) => {
 //         try {
@@ -185,4 +201,7 @@ const getMultipleChats = async (userId) => {
     })
 }
 
-export { getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken, findUserByEmail }
+
+
+
+export { getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken, findUserByEmail,getGroupDetails }

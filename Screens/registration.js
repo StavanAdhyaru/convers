@@ -189,7 +189,8 @@ const Registration = ({navigation,route}) => {
                         dbRef.doc(user.uid).set({
                             name: data.name,
                             email: data.email,
-                            contactNumber: data.contactNumber
+                            contactNumber: data.contactNumber,
+                            profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/convers-e6df7.appspot.com/o/default-user-image.png?alt=media&token=b6912cc0-8e38-4dd9-8ba4-c6f967430c43"
                         });
                         userCredentials.user.sendEmailVerification();
                         // auth.signOut();

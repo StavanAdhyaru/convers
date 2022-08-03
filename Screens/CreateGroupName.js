@@ -32,7 +32,7 @@ const CreateGroupName = ({navigation,route}) => {
         check_textInputChange: false,
     });
     const [photo, setPhoto] = useState('');
-    const [url, setUrl] = useState('');
+    const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/convers-e6df7.appspot.com/o/group-user-img.jpeg?alt=media&token=df8dc433-e443-4bad-bd66-fb75c4fd431c');
     const textInputChange = (val) => {
 
         if (val.length >= 1) {
@@ -64,8 +64,6 @@ const CreateGroupName = ({navigation,route}) => {
 
     const changeProfileImage = async () => {
         try {
-            // setUrl(data.profileImageUrl);
-            // console.log('old old fetched from db ::: url: ', data.profileImageUrl);
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
                 base64: true,
@@ -115,6 +113,10 @@ const CreateGroupName = ({navigation,route}) => {
             let tempUrl = await storage.ref("images").child(`${data.groupId}`).getDownloadURL();
             setUrl(tempUrl);
             console.log('new url: ', tempUrl);
+            setData({
+                ...data,
+                groupImageUrl: tempUrl
+            });
             
         } catch (error) {
             console.log('error: ', error);
@@ -173,7 +175,6 @@ const CreateGroupName = ({navigation,route}) => {
               : null}
                 </View>
                 <View style={styles.button}>
-                    {/* <Button style={styles.signIn} title="Sign In" onPress={loginHandle}/> */}
 
                     <TouchableOpacity onPress={goToAddPeoplePage}>
                         <LinearGradient

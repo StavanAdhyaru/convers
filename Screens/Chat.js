@@ -52,7 +52,8 @@ const Chat = ({ navigation, route }) => {
     // const [newChatId, setChatId] = useState(null);
     const [sendersToken, setSendersToken] = useState("");
     const [receiversToken, setReceiversToken] = useState("");
-    const { receipentName, receipentProfileImage, currentuserId } = route.params;
+    const { receipentName, receipentProfileImage, currentuserId, } = route.params;
+    const isGroup = route.params.isGroup;
     const image = { uri: "https://reactjs.org/logo-og.png" };
     const [receipentData,setReceipentData] = useState({
         name: '',
@@ -65,6 +66,12 @@ const Chat = ({ navigation, route }) => {
     const [receipentStatus,setReceipentStatus] = useState(false);
     const [isImage, setIsImage] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
+    const [groupData,setGroupData] = useState({
+        name: '',
+        profileImageUrl: '',
+        usersList: [],
+        chatId: ''
+    });
 
     const onResult = (querySnapshot) => {
         let allChats = [];
@@ -104,6 +111,8 @@ const Chat = ({ navigation, route }) => {
     }
 
     useEffect(() => {
+
+        console.log("Is a group", isGroup);
         getRecepientDataFromDb();
         const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot((querySnapshot) => {
             let allChats = [];
@@ -155,10 +164,22 @@ const Chat = ({ navigation, route }) => {
                         {
                             console.log("Chat Id while sending",chatId)
                         }
-                        <TouchableOpacity onPress={() => {navigation.navigate("OtherUserDetails",{
-                            otherUserId: userId,
-                            chatId: chatId
-                        })}}>
+                        <TouchableOpacity onPress={() => {
+                            if(!isGroup){
+                                navigation.navigate("OtherUserDetails",{
+                                    otherUserId: userId,
+                                    chatId: chatId
+                                })
+                            }else{
+                                navigation.navigate("GroupProfile",{
+                                    groupId: userId,
+                                    chatId: chatId,
+                                    groupData: groupData
+                                });
+                            }
+                            }
+                        
+                        }>
                         <UserImg style={{ margin: 0 }} source={{
                             uri: receipentProfileImage,
                         }} />
@@ -336,15 +357,29 @@ const Chat = ({ navigation, route }) => {
 
     const getRecepientDataFromDb = async () => {
         try{
-            let response = await fireDB.collection('users').doc(userId).get();
-            console.log('userData: ', response.data());
-            let userData = response.data();
-            setReceipentData({
-                ...userData
-            })
-            console.log("setting recepient Status")
-            setReceipentStatus(receipentData.status);
-            setReceiversToken(userData.pushToken);
+            if(isGroup){
+                console.log("User Id at Chat.js ",userId)
+                let response = await fireDB.collection('groups').doc(userId).get();
+                console.log('group data found in Chat.js', response.data());
+                let gData = response.data();
+                setGroupData({
+                    ...gData
+                })
+                console.log(groupData);
+
+
+            }else{
+                let response = await fireDB.collection('users').doc(userId).get();
+                console.log('userData: ', response.data());
+                let userData = response.data();
+                setReceipentData({
+                    ...userData
+                })
+                console.log("setting recepient Status")
+                setReceipentStatus(receipentData.status);
+                setReceiversToken(userData.pushToken);
+            }
+            
 
         }catch(error){
             console.log(error);
@@ -365,39 +400,6 @@ const Chat = ({ navigation, route }) => {
             ...data
         })
     }
-
-    // const getMessages = async () => {
-
-    //     let loggedInUser = await getUserDetails(loggedInUserId);
-    //     setLoggedInUser({...loggedInUser});
-    //     setSendersToken(loggedInUser.pushToken);
-    //     console.log("Display :: ", sendersToken, receiversToken);
-    //     console.log('chatId get messages: ', chatId);
-
-    //     let allMessages = await getChat(chatId);
-
-    //     let userDetails = {
-    //         [loggedInUserId]: {
-    //             name: loggedInUser.name,
-    //             avatar: loggedInUser.profileImageUrl
-    //         },
-    //         [userId]: {
-    //             name: receipentData.name,
-    //             avatar: receipentData.profileImageUrl
-    //         }
-    //     }
-
-    //     let result = allMessages.forEach((message) => {
-    //         message["user"] = {
-    //             _id: message.userId,
-    //             ...userDetails[message.userId],
-    //         }
-    //         delete message.userId
-    //     })
-
-    //     setMessages(allMessages);
-
-    // }
 
     const setMessagesAfterSend = (messages) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
@@ -587,7 +589,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 10,
-        
         borderRadius: 50
       }
 
