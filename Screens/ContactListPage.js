@@ -95,7 +95,7 @@ const ContactListPage = ({ navigation, route }) => {
                     size={20}
                 />
                 <TextInput style={styles.searchText}
-                    placeholder="Search Friend"
+                    placeholder="Enter Name"
                     placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)

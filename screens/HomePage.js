@@ -154,7 +154,7 @@ const HomePage = ({ navigation, route }) => {
                 <Stack.Screen options={{ headerShown: false }} name="AddContact" component={AddContact} />
                 <Stack.Screen options={{ headerShown: false }} name="CreateGroupName" component={CreateGroupName} />
                 <Stack.Screen options={{ headrerShown: false }} name="AddPeopleInGroup" component={AddPeopleInGroup} />
-                <Stack.Screen options={{ headrerShown: false }} name="GroupProfile" component={GroupProfile} />
+                <Stack.Screen options={{ headerShown: false }} name="GroupProfile" component={GroupProfile} />
             </Stack.Navigator>
         </NavigationContainer>
     );

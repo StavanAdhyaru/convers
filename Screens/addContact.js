@@ -1,5 +1,5 @@
 import { auth, fireDB } from '../Firebase';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import {
     Container,
@@ -30,6 +30,14 @@ const AddContact = ({ navigation, route }) => {
         readUser();
     }, []);
 
+    useLayoutEffect(() => {
+
+        navigation.setOptions({
+            title: "ADD FRIEND",
+            headerStyle: { backgroundColor: '#009387' },
+        })
+    }, [navigation]);
+
     const readUser = async () => {
         const getUser = await getUserDetails(currentUserId);
         setCurrentUser(getUser);
@@ -57,11 +65,22 @@ const AddContact = ({ navigation, route }) => {
     }
 
     return (
+
+        
+
         <Container>
+
+        
+        
+        
+
             <View style={styles.itemsearch}>
+
                 <TextInput style={styles.searchText}
-                    placeholder="Search Friend"
+                    placeholder="Enter Email"
                     placeholderTextColor={"#009387"}
+                    // textAlign= {'center'}
+                    
                     onChangeText={(input) => {
                         setSearchEmailId(input)
                     }}
@@ -76,8 +95,9 @@ const AddContact = ({ navigation, route }) => {
 
             </View>
 
-            <Card
-                onPress={() => navigation.navigate('Chat', {
+
+            <Card style={{backgroundColor: '#D3D3D3'}}
+                onPress = {() => navigation.navigate('Chat', {
                     userId: foundUser[0].id,
                     loggedInUserId: currentUserId,
                     name: currentUser.name,
@@ -86,18 +106,18 @@ const AddContact = ({ navigation, route }) => {
                     receipentProfileImage: foundUser[0].profileImageUrl
                 })}
             >
-                <UserInfo>
+                <UserInfo style={{padding: 15}}>
                     {
-                        foundUser.length > 0 ? <View>
-                            <Image
-                                source={{ uri: foundUser[0].profileImageUrl }}
-                                style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
-                            />
-                            <TextSection>
-                                <UserInfoText>
-                                    <UserName>{foundUser[0].name}</UserName>
-                                </UserInfoText>
-                            </TextSection>
+                        foundUser.length>0 ? <View style={{marginLeft: 15}}>
+                        <Image
+                            source={{ uri: foundUser[0].profileImageUrl }}
+                            style={{ width: 80, height: 80, borderRadius: 90, alignSelf: "center" }}
+                        />
+                        <TextSection >
+                            <UserInfoText >
+                                <UserName style={{fontSize: 20}}>{foundUser[0].name}</UserName>
+                            </UserInfoText>
+                        </TextSection>
                         </View> : <View></View>
                     }
 
@@ -132,12 +152,12 @@ const styles = StyleSheet.create({
     itemsearch: {
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 70,
+        padding: 20,
         borderRadius: 16,
         flexDirection: 'row',
     },
     groupIcon: {
-        marginLeft: 80
+        marginLeft: 30
 
     },
     searchIcon: {
@@ -147,7 +167,9 @@ const styles = StyleSheet.create({
         marginLeft: 20
     },
     searchText: {
-        margin: 10
+        marginLeft:50,
+        alignItems: 'center',
+        width: 200,
     }
 });
 

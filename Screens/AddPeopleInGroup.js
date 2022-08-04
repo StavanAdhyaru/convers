@@ -51,9 +51,9 @@ const AddPeopleInGroup = ({ navigation, route }) => {
             title: "Add Contacts",
             headerStyle: { backgroundColor: '#009387' },
             headerRight: () => (
-                <TouchableOpacity onPress={generateGroup}>
-                    <Text style={{ marginTop: 35, width: 100, marginRight: 140, textAlign: 'right' }}>Create Group</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity onPress={generateGroup}>
+                        <Text style={{ marginTop: 5, marginRight: 5,textAlign:'right', fontSize: 18, }}>CREATE </Text>
+                    </TouchableOpacity>
             )
         })
     }, [navigation]);

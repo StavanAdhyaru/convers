@@ -3,13 +3,19 @@ import 'firebase/auth'
 import 'firebase/firestore'
 import 'firebase/storage'
 
+/**
+ *      new firebase config
+ *      nikki.alite@gmail.com 
+ */
+
 // const firebaseConfig = {
-//     apiKey: "AIzaSyCTtuA1kuTIleYDPeUlv9fDaAuASLSZaiY",
-//     authDomain: "convers-e6df7.firebaseapp.com",
-//     projectId: "convers-e6df7",
-//     storageBucket: "convers-e6df7.appspot.com",
-//     messagingSenderId: "800514410152",
-//     appId: "1:800514410152:web:fe8d70944650fc0a09249d"
+//   apiKey: "AIzaSyCU4LnDuMPSn4EPb8diTD4tJsvYgMUBtkw",
+//   authDomain: "convers-65d21.firebaseapp.com",
+//   projectId: "convers-65d21",
+//   storageBucket: "convers-65d21.appspot.com",
+//   messagingSenderId: "1016756170952",
+//   appId: "1:1016756170952:web:ddc85eb03da7ca512035fd",
+//   measurementId: "G-PF2C2BFRGZ"
 // };
 
 const firebaseConfig = {

@@ -65,15 +65,16 @@ const OtherUserDetailsPage = ({ navigattion, route }) => {
     return (
 
         <View style={styles.container}>
-            <StatusBar backgroundColor='#009387' barStyle="light-content" />
-            <View>
-                <Image
-                    source={{ uri: otherUserData.profileImageUrl }}
-                    alt={require(`../assets/default-user-image.png`)}
-                    style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
-                />
-            </View>
-            <ScrollView>
+                <StatusBar backgroundColor='#009387' barStyle="light-content" />
+                <View>
+                <Text style={{marginLeft: 180, fontSize: 25, marginTop: 25}}>Hey</Text>
+                    <Image
+                        source={{ uri: otherUserData.profileImageUrl }}
+                        alt = {require(`../assets/default-user-image.png`)}
+                        style={{ width: 240, height: 240, borderRadius: 250, alignSelf: "center", marginTop: 50 }}
+                    />
+                </View>
+                <ScrollView>
                 <Animatable.View
                     animation='fadeInUpBig'
                     style={styles.footer}
@@ -181,7 +182,8 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         paddingHorizontal: 20,
-        paddingVertical: 30
+        paddingVertical: 30,
+        marginTop: 50
     },
     text_header: {
         color: '#fff',
