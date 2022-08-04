@@ -37,7 +37,7 @@ const AddContact = ({ navigation, route }) => {
 
     const searchUser = async () => {
 
-        await fireDB.collection('users').where('email', '==', searchEmailId).get().then((snapshot) => {
+        await fireDB.collection('users').where('email', '==', searchEmailId.toLowerCase()).get().then((snapshot) => {
             if (snapshot.empty) {
                 console.log('No matching documents.');
             }

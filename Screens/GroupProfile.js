@@ -40,6 +40,7 @@ const GroupProfile = ({ navigattion, route }) => {
     const tempUserData = [];
     const isFocused = useIsFocused();
     const currentUserId = auth.currentUser.uid;
+    const [photo, setPhoto] = useState('');
 
     useEffect(() => {
         console.log("Group Id", groupId);
@@ -76,6 +77,68 @@ const GroupProfile = ({ navigattion, route }) => {
         });
         
     }
+    const changeProfileImage = async () => {
+        try {
+            setUrl(data.profileImageUrl);
+            console.log('old old fetched from db ::: url: ', groupData.profileImageUrl);
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                base64: true,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1
+            });
+
+            if (!result.cancelled) {
+                console.log('result: ', result.uri);
+                setPhoto(result);
+
+                uploadPhoto(result).then(async () => {
+                    await getDownloadURL();
+                    alert("Image uploaded!")
+                }).catch((error) => {
+                    alert("Could not upload Image.");
+                })
+            }
+        } catch (error) {
+            console.log('error: ', error);
+
+        }
+    }
+
+    const getDownloadURL = async () => {
+        try {
+            console.log('old url: ', url);
+            // get download url
+            let tempUrl = await storage.ref("images").child(`${groupId}`).getDownloadURL();
+            setUrl(tempUrl);
+            console.log('new url: ', tempUrl);
+
+            await updateUserDoc(tempUrl);
+
+        } catch (error) {
+            console.log('error: ', error);
+
+        }
+    }
+
+    const uploadPhoto = (image) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // upload
+                console.log('image argument:: ', image.uri);
+                const response = await fetch(image.uri)
+                const blob = await response.blob();
+                var ref = storage.ref("images/").child(`${groupId}`);
+                console.log("_____________________LOADING...____________________");
+                resolve(ref.put(blob));
+
+            } catch (error) {
+                console.log('error: ', error);
+                reject(error);
+            }
+        })
+    }
 
     return (
         <View style={styles.container}>
@@ -86,6 +149,17 @@ const GroupProfile = ({ navigattion, route }) => {
                     alt={require(`../assets/default-user-image.png`)}
                     style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
                 />
+                <View style={styles.button}>
+                    <TouchableOpacity
+                        onPress={changeProfileImage}
+                    >
+                       {
+                        groupData.createdBy === currentUserId ? <Text style={[styles.textSign, {
+                            color: '#ECCC01', padding: 10
+                        }]}>Change profile image</Text> : <View></View>
+                       } 
+                    </TouchableOpacity>
+                </View>
             </View>
             {/* <ScrollView> */}
             <Animatable.View
