@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
+import React, { useEffect, useCallback, useState, useLayoutEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import {
     UserImgWrapper, UserImg
@@ -52,8 +52,10 @@ const Chat = ({ navigation, route }) => {
         usersList: [],
         chatId: ''
     });
+    const chatData = useRef([]);
 
     useEffect(() => {
+        
         console.log("Is a group", isGroup);
         // getRecepientDataFromDb();
 
@@ -71,7 +73,7 @@ const Chat = ({ navigation, route }) => {
                 fireDB.collection('users').doc(userId).onSnapshot((snapshot) => {
                    
                         let userData = snapshot.data();
-                        console.log("Getting data of other user here first: ",snapshot.data());
+                        // console.log("Getting data of other user here first: ",snapshot.data());
                         setReceipentData({
                             ...userData
                         })
@@ -85,9 +87,8 @@ const Chat = ({ navigation, route }) => {
         }
 
         const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot(async (querySnapshot) => {
+            
             let allChats = [];
-            let response = await getChat(chatId);
-
             querySnapshot.docChanges().map(async ({ doc }) => {
                 let message = doc.data();
                 message._id = doc.id;
@@ -107,10 +108,6 @@ const Chat = ({ navigation, route }) => {
                 }
             }
 
-            if (allChats.length === 1) {
-                allChats = [...response, ...allChats];
-            }
-
             allChats.forEach((message) => {
                 message["user"] = {
                     _id: message.userId,
@@ -120,14 +117,18 @@ const Chat = ({ navigation, route }) => {
             })
 
             if (allChats.length === 1) {
-                // setMessagesAfterSend([allChats]);
+                console.log("Sent one chat");
+                chatData.current.splice(0, 0, allChats[0]);
             } else {
-                setMessages(allChats);
+                console.log("setting all chats");
+                chatData.current = allChats;
             }
-
+            setMessages(chatData.current);
+            
         });
-        return () => unsubscribe();
 
+        return () => unsubscribe();
+        
     }, [isFocused]);
 
     useLayoutEffect(() => {
@@ -339,7 +340,6 @@ const Chat = ({ navigation, route }) => {
                     "content-type": "application/json"
                 }
             })
-            console.log('response: ', response);
 
         } catch (error) {
             console.log('error notify user: ', error);
@@ -383,10 +383,9 @@ const Chat = ({ navigation, route }) => {
         }
 
         console.log('messages: ', messages);
-        setMessagesAfterSend(messages);
+        // setMessagesAfterSend(messages);
 
         // notify other user
-        console.log('loggedInUser: ', loggedInUser);
         notifyUser(name, receiversToken, messages[0].text);
 
 
