@@ -67,7 +67,7 @@ const OtherUserDetailsPage = ({ navigattion, route }) => {
         <View style={styles.container}>
                 <StatusBar backgroundColor='#009387' barStyle="light-content" />
                 <View>
-                <Text style={{marginLeft: 180, fontSize: 25, marginTop: 25}}>Hey</Text>
+                <Text style={{alignSelf: "center", fontSize: 25, marginTop: 25}}>User Details</Text>
                     <Image
                         source={{ uri: otherUserData.profileImageUrl }}
                         alt = {require(`../assets/default-user-image.png`)}
