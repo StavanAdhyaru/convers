@@ -2,21 +2,30 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
 import 'firebase/storage'
-// import 'firebase/messaging';
 
+/**
+ *      new firebase config
+ *      nikki.alite@gmail.com 
+ */
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCU4LnDuMPSn4EPb8diTD4tJsvYgMUBtkw",
+//   authDomain: "convers-65d21.firebaseapp.com",
+//   projectId: "convers-65d21",
+//   storageBucket: "convers-65d21.appspot.com",
+//   messagingSenderId: "1016756170952",
+//   appId: "1:1016756170952:web:ddc85eb03da7ca512035fd",
+//   measurementId: "G-PF2C2BFRGZ"
+// };
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAZJJsBEZBPv1RJytybioCLxRApEUi9XKg",
-    authDomain: "convers-5a5ea.firebaseapp.com",
-    projectId: "convers-5a5ea",
-    storageBucket: "convers-5a5ea.appspot.com",
-    messagingSenderId: "368215477520",
-    appId: "1:368215477520:web:00fe6791624779ae2ee995",
-    measurementId: "G-PMWEDX1DDY"
+    apiKey: "AIzaSyCdwRnqflnKbsKwWTRyucxxr5x6ALYhHXQ",
+    authDomain: "convers-final.firebaseapp.com",
+    projectId: "convers-final",
+    storageBucket: "convers-final.appspot.com",
+    messagingSenderId: "76689378131",
+    appId: "1:76689378131:web:dfcb9db09fab922104afa6"
   };
-
 
 // Initialize Firebase
 let app;
@@ -29,6 +38,7 @@ if (firebase.apps.length === 0) {
 const auth = firebase.auth();
 const fireDB = app.firestore();
 const storage = firebase.storage()
-// const messaging = firebase.messaging(app);
 
 export { auth, fireDB, storage };
+
+

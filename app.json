@@ -1,16 +1,17 @@
 {
   "expo": {
-    "name": "convers",
+    "name": "Convers",
     "slug": "convers",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.jpg",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash.jpg",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
+
     "updates": {
       "fallbackToCacheTimeout": 0
     },
@@ -18,13 +19,18 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.georgebrown.convers",
+      "buildNumber": "1.0.0"
+
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.georgebrown.convers",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

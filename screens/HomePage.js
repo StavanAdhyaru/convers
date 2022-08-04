@@ -1,8 +1,10 @@
-import { auth, fireDB } from "../firebase";
-import { useState, useEffect } from 'react';
+import { auth, fireDB } from "../Firebase";
+import { useState, useEffect, useRef } from 'react';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 import {
     StyleSheet,
-    Dimensions
+    Dimensions, AppState, SnapshotViewIOS
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -13,26 +15,63 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './Login';
 import Chat from './Chat';
 import ChangePasswordScreen from './ChangePassword';
-import Registration from './registration';
+import Registration from './Registration';
 import ForgotPasswordPage from './ForgotPasswordPage';
+import { setUserStatus, savePushNotificationToken } from '../Helpers/User'
+import { getContactslist } from "../Helpers/Contacts";
+import OtherUserDetailsPage from "./OtherUserDetailsPage";
+import AddContact from "./AddContact";
+import CreateGroupName from "./CreateGroupName";
+import AddPeopleInGroup from "./AddPeopleInGroup";
+import GroupProfile from "./GroupProfile";
 
-const { height } = Dimensions.get('screen');
-const height_logo = height * 0.28;
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 
-const HomePage = ({ navigation,route }) => {
+const HomePage = ({ navigation, route }) => {
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const appState = useRef(AppState.currentState);
+    const [appStateVisible, setAppStateVisible] = useState(appState.current);
+    let userId = auth.currentUser.uid;
     const [currentUserData, setData] = useState({
         name: '',
         email: '',
         contactNumber: '',
-        profileImageUrl: ''
+        profileImageUrl: '',
+        status: true,
+        pushToken: ''
     });
-    const [currentUserId,setId] = useState('')
-    useEffect( () => {
+    const [currentUserId, setId] = useState('')
+
+    useEffect(() => {
         console.log("in useEffect");
+        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+        getContactslist();
         getUserDataFromDB();
+        const subscription = AppState.addEventListener("change", nextAppState => {
+            if (
+                appState.current.match(/inactive|background/) &&
+                nextAppState === "active"
+            ) {
+                console.log("App has come to the foreground!");
+                setUserStatus
+            }
+            appState.current = nextAppState;
+            setAppStateVisible(appState.current);
+            console.log("AppState", appState.current);
+
+            if (appState.current == "active") {
+                console.log("Here for updating userStatus")
+                setUserStatus(userId, currentUserData, true);
+            } else {
+                setUserStatus(userId, currentUserData, false);
+            }
+            return () => {
+                subscription.remove();
+            };
+
+        });
     }, [])
 
 
@@ -40,7 +79,6 @@ const HomePage = ({ navigation,route }) => {
     const getUserDataFromDB = async () => {
         try {
             console.log("in getUserDataFromDB");
-            let userId = auth.currentUser.uid;
             console.log(userId);
             setId(userId);
             let response = await fireDB.collection('users').doc(userId).get();
@@ -50,12 +88,55 @@ const HomePage = ({ navigation,route }) => {
                 ...userData
             })
 
-            
+            console.log("Here first");
         } catch (error) {
             console.log('error: ', error);
         }
-    } 
-   
+    }
+
+
+
+    const registerForPushNotificationsAsync = async () => {
+        console.log("registering for push notification");
+        let token;
+        if (Device.isDevice) {
+            // check for existing permissions
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            // if no existing permission , ask user for permission
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
+            // if no permission , exit the function
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            // get push notification token
+            token = (await Notifications.getExpoPushTokenAsync()).data;
+            console.log(token);
+
+            if (token) {
+                // save it to users database
+                savePushNotificationToken(currentUserId, token)
+            }
+
+        } else {
+            alert('Must use physical device for Push Notifications');
+        }
+
+        if (Platform.OS === 'android') {
+            Notifications.setNotificationChannelAsync('default', {
+                name: 'default',
+                importance: Notifications.AndroidImportance.MAX,
+                vibrationPattern: [0, 250, 250, 250],
+                lightColor: '#FF231F7C',
+            });
+        }
+        return token;
+    }
+
     return (
         <NavigationContainer independent={true}>
             <Stack.Navigator>
@@ -63,19 +144,23 @@ const HomePage = ({ navigation,route }) => {
                     name="Tab"
                     component={TabStackNavigator}
                     options={{ headerShown: false }} />
-                <Stack.Screen options={{headerShown:false}} name="Log" component={Login} />
-                <Stack.Screen options={{headerShown:false}} name="CP" component={ChangePasswordScreen}/>
-                <Stack.Screen options={{headerShown:false}} name="Home" component={HomePage}/>
-                <Stack.Screen option={{headerStyle: {height: 70}}} initialParams={{currentUserData: currentUserData,currentUserId: currentUserId}} name="Chat" component={Chat}/>
-                <Stack.Screen options={{headerShown:false}} name="Register" component={Registration}/>
-                <Stack.Screen options={{headerShown:false}} name="ForgotPassword" component={ForgotPasswordPage}/>
+                <Stack.Screen options={{ headerShown: false }} name="Log" component={Login} />
+                <Stack.Screen options={{ headerShown: false }} name="CP" component={ChangePasswordScreen} />
+                <Stack.Screen options={{ headerShown: false }} name="Home" component={HomePage} />
+                <Stack.Screen option={{ headerStyle: { height: 70 } }} initialParams={{ currentUserData: currentUserData, currentUserId: currentUserId }} name="Chat" component={Chat} />
+                <Stack.Screen options={{ headerShown: false }} name="Register" component={Registration} />
+                <Stack.Screen options={{ headerShown: false }} name="ForgotPassword" component={ForgotPasswordPage} />
+                <Stack.Screen options={{ headerShown: false }} name="OtherUserDetails" component={OtherUserDetailsPage} />
+                <Stack.Screen options={{ headerShown: false }} name="AddContact" component={AddContact} />
+                <Stack.Screen options={{ headerShown: false }} name="CreateGroupName" component={CreateGroupName} />
+                <Stack.Screen options={{ headrerShown: false }} name="AddPeopleInGroup" component={AddPeopleInGroup} />
+                <Stack.Screen options={{ headerShown: false }} name="GroupProfile" component={GroupProfile} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
 
 const TabStackNavigator = () => {
-    
 
     return (
         <Tab.Navigator
@@ -97,8 +182,12 @@ const TabStackNavigator = () => {
                 tabBarActiveTintColor: '#009387',
                 tabBarInactiveTintColor: 'gray',
             })}>
-            <Tab.Screen  options={{title:'Chats', headerTintColor:'#009387'}} name="ContactListPage" component={ContactListPage} />
-            <Tab.Screen  options={{headerShown:false, title:'Settings'}} name="SettingsPage" component={SettingsPage} />
+            <Tab.Screen options={{ title: 'Chats', headerTintColor: '#009387', headerBackButtonMenuEnabled: true }} name="ContactListPage" component={ContactListPage} />
+            <Tab.Screen options={{
+                headerShown: false, title: 'Settings', headerBackButtonMenuEnabled: true, topBar: {
+                    backButton: {},
+                }
+            }} name="SettingsPage" component={SettingsPage} />
         </Tab.Navigator>
     );
 }

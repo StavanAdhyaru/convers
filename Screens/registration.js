@@ -6,20 +6,18 @@ import {
     TextInput,
     Platform,
     StyleSheet,
-    StatusBar,
     Alert,
-    Button,
-    Dimensions, Image
+    Dimensions
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import { auth, fireDB } from '../firebase';
+import { auth, fireDB } from '../Firebase';
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
-const Registration = () => {
+const Registration = ({ navigation, route }) => {
 
     const dbRef = fireDB.collection('users');
     const [data, setData] = useState({
@@ -78,7 +76,6 @@ const Registration = () => {
         if (val.length !== 0) {
             const pattern = /[a-zA-Z0-9]+[\.]?([a-zA-Z0-9]+)?[\@][a-z]{3,9}[\.][a-z]{2,5}/;
             const result = pattern.test(val);
-
 
             if (result) {
                 setData({
@@ -187,22 +184,22 @@ const Registration = () => {
                     .createUserWithEmailAndPassword(data.email, data.password)
                     .then(userCredentials => {
                         const user = userCredentials.user;
-                        console.log("Registered in with ", user.email);
                         dbRef.doc(user.uid).set({
                             name: data.name,
                             email: data.email,
                             contactNumber: data.contactNumber,
-                            chatIds: []
+                            profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/convers-e6df7.appspot.com/o/default-user-image.png?alt=media&token=b6912cc0-8e38-4dd9-8ba4-c6f967430c43"
                         });
+                        userCredentials.user.sendEmailVerification();
                         setDefaults();
-                        Alert.alert('Success', 'You are successfully registered', [{ text: 'OK' }]);
+                        alert("Varification Email sent");
                         navigation.replace("Home");
+
                     })
                     .catch(error => {
                         console.log(error);
                     });
 
-                // navigation.navigate('Home');
             }
             else {
                 Alert.alert('Error', 'Password is not matched', [{ text: 'OK' }]);
@@ -215,7 +212,6 @@ const Registration = () => {
 
     return (
         <View style={styles.container}>
-            {/* <Text>Open up App.js to start working on your app!</Text>    */}
             <View style={styles.header}>
                 <Text style={styles.text_header}>Registration!</Text>
             </View>
@@ -479,4 +475,3 @@ const styles = StyleSheet.create({
 });
 
 export default Registration;
-  

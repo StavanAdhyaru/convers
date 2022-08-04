@@ -1,196 +1,447 @@
 import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity,ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import {
-    UserImgWrapper,UserImg
+    UserImgWrapper, UserImg
 } from './Styles/MessageStyles';
-import { Avatar } from 'react-native-elements';
-import { signOut } from 'firebase/auth';
-import { GiftedChat } from 'react-native-gifted-chat';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { createChat, getChat, storeChat } from '../API/chat';
-import { getUserDetails, addChatId, getChatId } from '../API/user';
-import { auth } from '../firebase';
+import { getChat, storeChat } from '../Helpers/Chat';
+import { addChatId } from '../Helpers/User';
+import { auth, fireDB, storage } from '../Firebase';
+import { IconButton } from 'react-native-paper';
+import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
+import { useIsFocused } from "@react-navigation/native";
+import {
+    FontAwesome5,
+    Entypo,
+    
+} from '@expo/vector-icons';
 
 const Chat = ({ navigation, route }) => {
-    const { userId, name, avatar } = route.params;
+    const isFocused = useIsFocused();
+    const { userId, name, avatar, chatId } = route.params;
     const loggedInUserId = auth.currentUser.uid;
     const [messages, setMessages] = useState([]);
-    const [user, setUser] = useState(null);
-    const [loggedInUser, setLoggedInUser] = useState(null);
-    const [chatId, setChatId] = useState(null);
-    const arr = [];
-    let STORAGE_KEY = "CHAT_DATA";
-    const {receipentName,receipentProfileImage,currentuserId} = route.params;
-    const currentUserData = route.params.currentUserData;
+    const [photo, setPhoto] = useState('');
+    const [loggedInUser, setLoggedInUser] = useState({
+        name: '',
+        email: '',
+        contactNumber: '',
+        profileImageUrl: '',
+        status: false,
+        pushToken: ''
+    });
+    // const [newChatId, setChatId] = useState(null);
+    const [receiversToken, setReceiversToken] = useState("");
+    const { receipentName, receipentProfileImage, currentuserId } = route.params;
+    const isGroup = route.params.isGroup;
+    const [receipentData, setReceipentData] = useState({
+        name: '',
+        email: '',
+        contactNumber: '',
+        profileImageUrl: '',
+        status: false,
+        pushToken: ''
+    });
+    const [receipentStatus, setReceipentStatus] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
+    const [groupData, setGroupData] = useState({
+        name: '',
+        profileImageUrl: '',
+        usersList: [],
+        chatId: ''
+    });
 
     useEffect(() => {
+        console.log("Is a group", isGroup);
+        // getRecepientDataFromDb();
 
-        getMessages();
-        // readUser();
-        // setMessages([
-        //     {
-        //         _id: 1,
-        //         text: 'Hello developer',
-        //         createdAt: new Date(),
-        //         user: {
-        //             _id: 2,
-        //             name: 'React Native',
-        //             avatar: 'https://placeimg.com/140/140/any',
-        //         },
-        //     },
-        // ])
-    }, []);
+
+        try{
+            if(isGroup){
+                console.log("User Id at Chat.js ",userId)
+                fireDB.collection('groups').doc(userId).onSnapshot((snapshot) => {
+                    let gData = snapshot.data();
+                    setGroupData({
+                        ...gData
+                    })
+                });
+            }else{
+                fireDB.collection('users').doc(userId).onSnapshot((snapshot) => {
+                   
+                        let userData = snapshot.data();
+                        console.log("Getting data of other user here first: ",snapshot.data());
+                        setReceipentData({
+                            ...userData
+                        })
+                        console.log("setting recepient Status")
+                        setReceipentStatus(receipentData.status);
+                        setReceiversToken(userData.pushToken);
+                });
+            }
+        }catch(error){
+            console.log(error);
+        }
+
+        const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot(async (querySnapshot) => {
+            let allChats = [];
+            let response = await getChat(chatId);
+
+            querySnapshot.docChanges().map(async ({ doc }) => {
+                let message = doc.data();
+                message._id = doc.id;
+                message.createdAt = message.createdAt.toDate();
+                allChats.push(message);
+
+            })
+            allChats.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+            let userDetails = {
+                [loggedInUserId]: {
+                    name: name,
+                    avatar: avatar
+                },
+                [userId]: {
+                    name: receipentData.name,
+                    avatar: receipentData.profileImageUrl
+                }
+            }
+
+            if (allChats.length === 1) {
+                allChats = [...response, ...allChats];
+            }
+
+            allChats.forEach((message) => {
+                message["user"] = {
+                    _id: message.userId,
+                    ...userDetails[message.userId],
+                }
+                delete message.userId
+            })
+
+            if (allChats.length === 1) {
+                // setMessagesAfterSend([allChats]);
+            } else {
+                setMessages(allChats);
+            }
+
+        });
+        return () => unsubscribe();
+
+    }, [isFocused]);
 
     useLayoutEffect(() => {
+        console.log('receipentName: ', receipentName);
         navigation.setOptions({
-            title: receipentName,
+            title: "",
+            headerStyle: { backgroundColor: '#009387' },
             headerLeft: () => (
-                <View style={{ marginLeft: 20 }}>
+                <View style={{ flexDirection: 'row' }}>
                     <UserImgWrapper>
-                    <UserImg source={{
-                        uri: receipentProfileImage,
-                    }} />
+                        {
+                            console.log("Chat Id while sending", chatId)
+                        }
+                        <TouchableOpacity onPress={() => {
+                            if (!isGroup) {
+                                navigation.navigate("OtherUserDetails", {
+                                    otherUserId: userId,
+                                    chatId: chatId
+                                })
+                            } else {
+                                navigation.navigate("GroupProfile", {
+                                    groupId: userId,
+                                    chatId: chatId,
+                                    groupData: groupData
+                                });
+                            }
+                        }
+
+                        }>
+                            <UserImg style={{ margin: 0 }} source={{
+                                uri: receipentProfileImage,
+                            }} />
+                        </TouchableOpacity>
                     </UserImgWrapper>
+                    <View style={{ flexDirection: 'column', margin: 20 }}>
+                        <Text style={{ fontSize: 22, fontWeight: '600' }}>{receipentName}</Text>
+                        {receipentData.status ?
+                            <Text style={{ marginTop: 5 }}>Online</Text> :
+                            <Text></Text>
+                        }
+                    </View>
                 </View>
-            ),
-            headerRight: () => (
-                <TouchableOpacity style={{
-                    marginRight: 10
-                }}
-                >
-                    <Text></Text>
-                </TouchableOpacity>
+
             )
         })
     }, [navigation]);
 
-    const getMessages = async () => {
 
-        let loggedInUser = await getUserDetails(loggedInUserId);
-        // console.log('loggedInUser: ', loggedInUser);
-        setLoggedInUser(loggedInUser);
-        // let loggedInUserChats = loggedInUser.chatIds;
-        // console.log('loggedInUserChats: ', loggedInUserChats);
+    const randGen = () => {
+        var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        var result = ""
+        var charactersLength = characters.length;
 
-        let otherUser = await getUserDetails(userId);
-        // let otherUserChats = otherUser.chatIds;
-        // console.log('otherUserChats: ', otherUserChats);
-
-        let chatId = await getChatId(loggedInUserId, userId);
-        console.log('chatId: ', chatId);
-        setChatId(chatId);
-
-        let allMessages = await getChat(chatId);
-        console.log('allMessages: ', allMessages);
-
-        let userDetails = {
-            [loggedInUserId]: {
-                name: loggedInUser.name,
-                avatar: loggedInUser.profileImageUrl
-            },
-            [userId]: {
-                name: otherUser.name,
-                avatar: otherUser.profileImageUrl
-            }
+        for (var i = 0; i < 5; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
+        return result;
 
-        let result = allMessages.forEach((message) => {
-            message["user"] = {
-                _id: message.userId,
-                ...userDetails[message.userId]
-            }
-            delete message.userId
-        })
-        console.log('result: ', result);
-        console.log('allMessages: ', allMessages);
-
-        setMessages(allMessages);
     }
 
-    const readUser = async () => {
-        let user = await getUserDetails(userId);
-        console.log('user: ', user);
-        setUser(user);
+    const getDownloadURL = async (randVar) => {
+        try {
+            let tempUrl = await storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`).getDownloadURL();
+            // setIsImage(true)
+            return tempUrl;
+
+        } catch (error) {
+            console.log('error in getDownloadURL function : ', error);
+        }
+    }
+
+    const uploadPhoto = (image, randVar) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                console.log('image argument:: ', image.uri);
+                const response = await fetch(image.uri)
+                const blob = await response.blob();
+                var ref = storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`);
+                console.log("_____________________LOADING...____________________");
+                resolve(ref.put(blob));
+
+            } catch (error) {
+                console.log('error: ', error);
+                reject(error);
+            }
+        })
+    }
+
+    const sendPhoto = async () => {
+        try {
+            let imgURI = null;
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                base64: true,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1
+            });
+
+            if (!result.cancelled) {
+                imgURI = result.uri;
+                setPhoto(result);
+                let randVarInSendPhoto = randGen();
+
+                // upload photo
+                uploadPhoto(result, randVarInSendPhoto).then(async () => {
+                    console.log('image uploaded');
+                    // get URL after uploading
+                    let imageUrl = await getDownloadURL(randVarInSendPhoto);
+                    console.log('imageUrl: ', imageUrl);
+                    setImageUrl(imageUrl);
+                    // store chat
+                    onSend([{ image: imageUrl }]);
+
+                }).catch((error) => {
+                    alert("Could not upload Image.");
+                    console.log('error in uploading: ', error);
+                })
+            }
+
+        } catch (error) {
+            console.log('error: ', error);
+
+        }
+    }
+
+
+    function InputBox() {
+        return (
+            <View style={styles.inputcontainer}>
+                <View style={styles.inputmaincontainer}>
+                    <FontAwesome5 name="laugh-beam" size={24} color="grey" />
+                    <Entypo name="attachment" size={24} color="grey" style={styles.icon} />
+                </View>
+            </View>
+        );
+    }
+
+
+    function renderSend(props) {
+        return (
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: 60 }}>
+                <Icon name="camera" size={32} style={{ marginHorizontal: 5 }} onPress={sendPhoto} />
+                <Send {...props}>
+                    <View style={styles.btnSend2}>
+                        <IconButton icon="send-circle" size={32} color="#009387" />
+
+                        {/* <Icon name="ios-send" size={24} color='#6646ee' /> */}
+                    </View>
+                </Send>
+            </View>
+        );
+    }
+
+    const scrollToBottomComponent = () => {
+        return (
+            <FontAwesome5 name='angle-double-down' size={22} color='#333' />
+        );
+    }
+
+    const getRecepientDataFromDb = async () => {
+        try {
+            if (isGroup) {
+                console.log("User Id at Chat.js ", userId)
+                let response = await fireDB.collection('groups').doc(userId).get();
+                console.log('group data found in Chat.js', response.data());
+                let gData = response.data();
+                setGroupData({
+                    ...gData
+                })
+                console.log(groupData);
+
+
+            } else {
+                let response = await fireDB.collection('users').doc(userId).get();
+                console.log('userData: ', response.data());
+                let userData = response.data();
+                setReceipentData({
+                    ...userData
+                })
+                console.log("setting recepient Status")
+                setReceipentStatus(receipentData.status);
+                setReceiversToken(userData.pushToken);
+            }
+
+
+        } catch (error) {
+            console.log(error);
+        }
+
     }
 
     const setMessagesAfterSend = (messages) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+    }
 
+    const notifyUser = async (name, token, message) => {
+        console.log('name, token, message: ', name, token, message);
+        try {
+            let response = await axios.post("https://exp.host/--/api/v2/push/send", {
+                "to": token,
+                "title": `Convers - ${name}`,
+                "body": message
+            }, {
+                headers: {
+                    "host": "exp.host",
+                    "accept": "application/json",
+                    "accept-encoding": "gzip, deflate",
+                    "content-type": "application/json"
+                }
+            })
+            console.log('response: ', response);
+
+        } catch (error) {
+            console.log('error notify user: ', error);
+
+        }
     }
 
     const onSend = useCallback(async (messages = []) => {
-        arr.push(messages);
-        for(let i=0; i<arr.length; i++)
-        {
-            // console.log("element" + i + "=" + arr[i].Text);
-            console.log(JSON.stringify(arr[i])._id);
-            console.log(JSON.stringify(arr[i], null, 4));
-        }
-        const saveData = async () => {
-            try {
-              await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(arr))
-            } catch (e) {
-              alert('Failed to save the data to the storage')
-            }
-          }
+        setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
 
-          saveData();
-
-          const getData = async () => {
-            try {
-              const jsonValue = await AsyncStorage.getItem(STORAGE_KEY)
-              return jsonValue != null ? console.log(" retrieved value:" + JSON.parse(jsonValue)[1].user) : null;
-            } catch(e) {
-              // error reading value
-            }
-          }
-
-          getData();
-        
         console.log('messages: ', messages);
-        
-        let newChatId = await storeChat(chatId, messages[0], loggedInUserId);
-        setChatId(newChatId);
-        
-        if(!chatId) {
-            // store new chat id in both users location
-            addChatId(userId, loggedInUserId, newChatId);
+        let isImage = false;
+        if (chatId) {
+            console.log('chatId on send: ', chatId);
+
+            console.log('isImage: ', isImage, messages[0].image);
+            if (messages[0].image) {
+                isImage = true;
+                console.log('isImage: ', isImage);
+                messages[0].createdAt = new Date();
+            } else {
+                isImage = false;
+                console.log('isImage: ', isImage);
+            }
         }
+
+        let newChatId = await storeChat(chatId, messages[0], loggedInUserId, isImage);
+        if (!chatId) {
+            console.log('newChatId: ', newChatId);
+            await addChatId(userId, loggedInUserId, newChatId);
+        }
+
+        if (isImage) {
+            messages[0]._id = "1",
+                messages[0].user = {
+                    _id: loggedInUserId,
+                    name: name,
+                    avatar: avatar
+                }
+
+        }
+
+        console.log('messages: ', messages);
         setMessagesAfterSend(messages);
+
+        // notify other user
+        console.log('loggedInUser: ', loggedInUser);
+        notifyUser(name, receiversToken, messages[0].text);
+
+
     }, []);
 
+    const renderBubblefunc = (props) => {
+        return (
+            <Bubble
+                {...props}
+                wrapperStyle={{
+                    right: {
+                        backgroundColor: '#009387',
+                    },
+                }}
+                textStyle={{
+                    right: {
+                        color: 'white',
+                    },
+                }}
+            />
+        );
+
+    };
+
     return (
-        <GiftedChat
-            textInputStyle={styles.composer}
-            minComposerHeight={40}
-            minInputToolbarHeight={60}
-            messages={messages}
-            showAvatarForEveryMessage={true}
-            enderSend={(props) => (
-                <View style={{ flexDirection: 'row', alignItems: 'center', height: 60 }}>
-                  {/* <BtnRound icon="camera" iconColor={Colors.red} size={40} style={{ marginHorizontal: 5 }} onPress={() => this.choosePicture()} /> */}
-                  <Send>
-                    <View style={styles.btnSend}>
-                      <Ionicons name="ios-send" size={24} color="red" />
-                    </View>
-                  </Send>
-                </View>
-              )}
-            onSend={messages => onSend(messages)}
-            user={{
-                _id: loggedInUserId,
-                name: name,
-                avatar: avatar
-            }}
-        />
+        <ImageBackground
+            source={require('../assets/wapp_background.jpeg')}
+            resizeMode='cover'
+            style={{ flex: 1 }}
+        >
+            <GiftedChat
+                scrollToBottom
+                scrollToBottomComponent={scrollToBottomComponent}
+                renderBubble={renderBubblefunc}
+                sendingContainer={InputBox}
+                onSend={messages => onSend(messages)}
+                alwaysShowSend
+                minComposerHeight={40}
+                minInputToolbarHeight={60}
+                messages={messages}
+                showAvatarForEveryMessage={false}
+                renderSend={renderSend}
+                user={{
+                    _id: loggedInUserId,
+                    name: name,
+                    avatar: avatar
+                }}
+            />
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
-    composer:{
-        borderRadius: 25, 
+    composer: {
+        borderRadius: 25,
         borderWidth: 0.5,
         borderColor: '#dddddd',
         marginTop: 10,
@@ -200,15 +451,61 @@ const styles = StyleSheet.create({
         paddingBottom: 5,
         paddingRight: 10,
         fontSize: 16
-      },
-      btnSend: {
+    },
+    btnSend: {
+        height: 40,
+        width: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+        borderRadius: 50,
+        color: '#6646ee',
+
+
+    },
+    btnIcon: {
+        height: 3,
+        width: 3,
+    },
+
+    sendingContainer: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    bottomComponentContainer: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+
+    inputcontainer: {
+        flexDirection: 'row',
+        margin: 10,
+        alignItems: 'flex-end',
+    },
+    inputmaincontainer: {
+        flexDirection: 'row',
+        backgroundColor: 'red',
+        padding: 10,
+        borderRadius: 25,
+        marginRight: 10,
+        flex: 1,
+        alignItems: 'flex-end',
+    },
+    textInput: {
+        flex: 1,
+        marginHorizontal: 10
+    },
+
+    btnSend2: {
         height: 40,
         width: 40,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 10,
         borderRadius: 50
-      }
- });
+    }
+
+
+});
 
 export default Chat;

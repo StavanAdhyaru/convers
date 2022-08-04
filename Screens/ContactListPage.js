@@ -2,8 +2,6 @@ import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
     PostTime,
@@ -12,162 +10,155 @@ import {
 } from './Styles/MessageStyles';
 import {
     View,
-    Text,
     TouchableOpacity,
     TextInput,
-    Platform,
     StyleSheet,
-    StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image, FlatList, Menu
+    Image,
+    FlatList
 } from 'react-native';
-import { getUserDetails, getAllUsers } from '../API/user';
-import { auth } from '../firebase';
+import { getUserDetails, getGroupDetails } from '../Helpers/User';
+import { getChat } from '../Helpers/Chat';
+import { auth, fireDB } from '../Firebase';
 import { useEffect, useState } from 'react';
-import { AsyncStorage } from 'react-native';
-
-const usersList = [
-    {
-        id: '1',
-        userName: 'Stavan Doe',
-        userImg: require('../assets/users/user-1.jpeg'),
-        messageTime: '4 mins ago',
-        messageText:
-            'Hey there, this is my test for a post of my social app in React Native.',
-    },
-    {
-        id: '2',
-        userName: 'John Doe',
-        userImg: require('../assets/users/user-2.jpeg'),
-        messageTime: '2 hours ago',
-        messageText:
-            'Hey there, this is my test for a post of my social app in React Native.',
-    },
-    {
-        id: '3',
-        userName: 'Ken William',
-        userImg: require('../assets/users/user-3.jpeg'),
-        messageTime: '1 hours ago',
-        messageText:
-            'Hey there, this is my test for a post of my social app in React Native.',
-    },
-    {
-        id: '4',
-        userName: 'Selina Paul',
-        userImg: require('../assets/users/user-4.jpeg'),
-        messageTime: '1 day ago',
-        messageText:
-            'Hey there, this is my test for a post of my social app in React Native.',
-    },
-    {
-        id: '5',
-        userName: 'Christy Alex',
-        userImg: require('../assets/users/user-8.jpeg'),
-        messageTime: '2 days ago',
-        messageText:
-            'Hey there, this is my test for a post of my social app in React Native.',
-    },
-];
+import Feather from 'react-native-vector-icons/Feather';
+import { useIsFocused } from "@react-navigation/native";
 
 
-// const getRecepeintUserData = async () => {
-//     try {
-//         console.log("in getUserDataFromDB");
-//         let userId = auth.currentUser.uid;
-//         console.log(userId);
-//         let response = await fireDB.collection('users').doc(userId).get();
-//         console.log('userData: ', response.data());
-//         let userData = response.data();
-//         setData({
-//             ...userData
-//         })
-
-//     } catch (error) {
-//         console.log('error: ', error);
-
-//     }
-// }
-
-const ContactListPage = ({navigation, item}) => {
+const ContactListPage = ({ navigation, route }) => {
+    const isFocused = useIsFocused();
     const [currentUser, setCurrentUser] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
+    const [searchBoolean, setBoolean] = useState(true);
+    const [searchData, setSearchData] = useState([]);
     const currentUserId = auth.currentUser.uid;
-    const [dataFromState, setData] = useState(usersList)
+    let userData = [];
 
-    const searchName = (input)=> {
-        let data = dataFromState;
-        let searchData = data.filter((item) =>{
-          return item.userName.toLowerCase().includes(input.toLowerCase())
-        });
-        setData(searchData)
+    const searchName = (input) => {
+        let data = allUsers;
+        if (input === "") {
+            setBoolean(true);
+            setSearchData(data);
+        } else {
+            setBoolean(false);
+            let searchD = data.filter((item) => {
+                return item.userData.name.toLowerCase().includes(input.toLowerCase())
+            });
+            setSearchData(searchD);
         }
+    }
 
     useEffect(() => {
         readUser();
         getAllUsersFromDB();
-    },[]);
-    
+
+    }, [isFocused]);
+
+
     const readUser = async () => {
-        const user = await AsyncStorage.getItem('user');
-        if(user) {
-            console.log('user: ', JSON.parse(user));
-            setCurrentUser(JSON.parse(user));
-        } else {
-            const getUser = await getUserDetails(currentUserId)
-            await AsyncStorage.setItem('user', JSON.stringify(getUser));
-            setCurrentUser(getUser);
-        }
+        const getUser = await getUserDetails(currentUserId)
+        setCurrentUser(getUser);
     }
 
     const getAllUsersFromDB = async () => {
-        let tempAllUsers = await getAllUsers();
-        let userList = tempAllUsers.filter((element) => element.id != currentUserId);
-        setAllUsers(userList);
+
+        fireDB.collection('users').doc(auth.currentUser.uid).collection("chatIdList").onSnapshot((querySnapshot) => {
+            const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
+                const eachUser = doc.data();
+                eachUser.id = doc.id;
+
+                if (eachUser.isGroup) {
+                    eachUser.userData = await getGroupDetails(doc.id);
+                } else {
+                    eachUser.userData = await getUserDetails(doc.id);
+                }
+
+                eachUser.chatData = await getChat(eachUser.chatId);
+                userData.push(eachUser);
+                userData = userData.sort((a, b) => {
+                    if (a.chatData[0] != null && b.chatData[0] != null) {
+                        b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime()
+                    }
+                });
+                setAllUsers(userData);
+            });
+        })
 
     }
 
-    return(
+    return (
         <Container>
-            <View>
-                <TextInput
-                    placeholder="Seach Friend"
+            <View style={styles.itemsearch}>
+
+                <Feather style={styles.searchIcon}
+                    name="search"
+                    color="#009387"
+                    size={20}
+                />
+                <TextInput style={styles.searchText}
+                    placeholder="Enter Name"
+                    placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)
                     }}
-                    style={{ fontSize: 18 }}
                 />
+                <TouchableOpacity onPress={() => navigation.navigate('CreateGroupName')}>
+                    <Feather style={styles.groupIcon}
+                        name="users"
+                        color="#009387"
+                        size={20}
+                        alignItems=""
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('AddContact')}>
+                    <Feather style={styles.plus}
+                        name="plus-circle"
+                        color="#009387"
+                        size={20}
+                        alignItems=""
+                    />
+                </TouchableOpacity>
 
             </View>
-        <FlatList
-            data={allUsers}
-            renderItem={({ item }) => (
-                <Card onPress={() => navigation.navigate('Chat', { 
-                    userId: item.id, 
-                    loggedInUserId: currentUserId, 
-                    name: currentUser.name, 
-                    avatar: currentUser.profileImageUrl, 
-                    receipentName: item.name, 
-                    receipentProfileImage: item.profileImageUrl 
+
+            <FlatList
+                extraData={allUsers}
+                data={searchBoolean ? allUsers : searchData}
+                renderItem={({ item }) => (
+                    <Card onPress={() => navigation.navigate('Chat', {
+                        userId: item.id,
+                        loggedInUserId: currentUserId,
+                        name: currentUser.name,
+                        avatar: currentUser.profileImageUrl,
+                        receipentName: item.userData ? item.userData.name : "",
+                        receipentProfileImage: item.userData ? item.userData.profileImageUrl : "",
+                        chatId: item.chatId,
+                        isGroup: item.isGroup
                     })}>
-                    <UserInfo>
-                        <Image
-                            source={{ uri: item.profileImageUrl }}
-                            style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
-                        />
-                        <TextSection>
-                            <UserInfoText>
-                                <UserName>{item.name}</UserName>
-                                <PostTime>{item.messageTime}</PostTime>
-                            </UserInfoText>
-                            <MessageText>{item.messageText}</MessageText>
-                        </TextSection>
-                    </UserInfo>
-                </Card>
-            )}
-            keyExtractor={(item,index)=>index.toString()}
-        />
-    </Container>
+                        <UserInfo>
+
+                            <Image
+                                source={{ uri: item.userData ? item.userData.profileImageUrl : "" }}
+                                style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
+                            />
+                            <TextSection>
+                                <UserInfoText>
+                                    <UserName>{item.userData ? item.userData.name : ""}</UserName>
+                                    {
+                                        item.chatData[0] != null ? <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime> : <PostTime></PostTime>
+                                    }
+
+                                </UserInfoText>
+                                {
+                                    item.chatData[0] != null ? <MessageText>{item.chatData[0].text}</MessageText> : <MessageText></MessageText>
+                                }
+
+                            </TextSection>
+                        </UserInfo>
+                    </Card>
+                )}
+                keyExtractor={(item) => item.id}
+            />
+        </Container>
     );
 }
 
@@ -192,6 +183,24 @@ const styles = StyleSheet.create({
     textSign: {
         fontSize: 18,
         fontWeight: 'bold'
+    },
+    itemsearch: {
+        padding: 16,
+        borderRadius: 16,
+        flexDirection: 'row',
+    },
+    groupIcon: {
+        marginLeft: 80
+
+    },
+    searchIcon: {
+        marginRight: 10
+    },
+    plus: {
+        marginLeft: 20
+    },
+    searchText: {
+        marginLeft: 10
     }
 });
 
