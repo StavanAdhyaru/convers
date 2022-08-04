@@ -84,15 +84,6 @@ const Chat = ({ navigation, route }) => {
             console.log(error);
         }
 
-
-
-
-
-
-
-
-
-
         const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot(async (querySnapshot) => {
             let allChats = [];
             let response = await getChat(chatId);
@@ -129,7 +120,7 @@ const Chat = ({ navigation, route }) => {
             })
 
             if (allChats.length === 1) {
-                setMessagesAfterSend([allChats]);
+                // setMessagesAfterSend([allChats]);
             } else {
                 setMessages(allChats);
             }
