@@ -40,7 +40,7 @@ const SettingsPage = ({ navigation }) => {
         securePasswordEntry: true,
     });
     const [photo, setPhoto] = useState('');
-    const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/convers-e6df7.appspot.com/o/default-user-image.png?alt=media&token=b6912cc0-8e38-4dd9-8ba4-c6f967430c43');
+    const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/convers-final.appspot.com/o/defaultProfileIcon.jpeg?alt=media&token=89d4381d-3489-4042-9ae3-a04388e0f956');
     const [isEditMode, setIsEditMode] = useState(false);
 
     const currentUser = auth.currentUser;

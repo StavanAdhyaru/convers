@@ -30,7 +30,7 @@ const CreateGroupName = ({ navigation, route }) => {
         check_textInputChange: false,
     });
     const [photo, setPhoto] = useState('');
-    const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/convers-e6df7.appspot.com/o/group-user-img.jpeg?alt=media&token=df8dc433-e443-4bad-bd66-fb75c4fd431c');
+    const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/convers-final.appspot.com/o/group-user-img.jpeg?alt=media&token=03b218b5-7d29-44bc-add7-f464404574d4');
     const textInputChange = (val) => {
 
         if (val.length >= 1) {
@@ -123,13 +123,13 @@ const CreateGroupName = ({ navigation, route }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor='#0bb4e3' barStyle="light-content" />
+            <StatusBar backgroundColor='#009387' barStyle="light-content" />
             <View style={styles.header}>
                 <Text style={styles.text_header}>Create New Group!</Text>
             </View>
             <View>
                 <Image
-                    source={{ uri: url }}
+                    source={{ uri: url }}r
                     alt={require(`../assets/default-user-image.png`)}
                     style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
                 />
@@ -192,7 +192,7 @@ const CreateGroupName = ({ navigation, route }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0bb4e3'
+        backgroundColor: '#009387'
     },
     header: {
         flex: 1,
