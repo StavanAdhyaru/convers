@@ -1,81 +1,29 @@
-import React, { useEffect, useCallback, useState, useLayoutEffect, FC } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image, TextInput,DevSettings } from 'react-native';
+import React, { useEffect, useCallback, useState, useLayoutEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import {
     UserImgWrapper, UserImg
 } from './Styles/MessageStyles';
 import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { createChat, getChat, storeChat } from '../API/chat';
-import { getUserDetails, addChatId, getChatId } from '../API/user';
-import { auth, fireDB, storage } from '../firebase';
-import { BackgroundImage } from 'react-native-elements/dist/config';
-import { IconButton, Snackbar } from 'react-native-paper';
-// import { Actions } from 'react-native-router-flux';
-// import ImagePicker from 'react-native-image-picker';
+import { getChat, storeChat } from '../Helpers/Chat';
+import { addChatId } from '../Helpers/User';
+import { auth, fireDB, storage } from '../Firebase';
+import { IconButton } from 'react-native-paper';
 import axios from 'axios';
-// import { encryption, decryption } from '../API/AES';
 import * as ImagePicker from 'expo-image-picker';
-import {v4 as uuidv4} from 'uuid';
-
+import { useIsFocused } from "@react-navigation/native";
 import {
-    MaterialCommunityIcons,
-    MaterialIcons,
     FontAwesome5,
     Entypo,
-    Fontisto,
+    
 } from '@expo/vector-icons';
-import Font from 'expo';
-import moment from 'moment';
-import { Picker } from '@react-native-picker/picker';
-import DropDownPicker from 'react-native-dropdown-picker';
-import { encryption,decryption } from '../API/AES';
-// import { HeaderBackButton } from 'react-navigation';
 
 const Chat = ({ navigation, route }) => {
-
-    const { userId, name, avatar } = route.params;
+    const isFocused = useIsFocused();
+    const { userId, name, avatar, chatId } = route.params;
     const loggedInUserId = auth.currentUser.uid;
     const [messages, setMessages] = useState([]);
     const [photo, setPhoto] = useState('');
-    const [url, setUrl] = useState('');
-
-    const [data, setData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        contactNumber: '',
-        address: '',
-        profileImageUrl: '',
-        check_nameInputChange: false,
-        check_emailInputChange: false,
-        check_passwordInputChange: false,
-        check_confirmPasswordInputChange: false,
-        check_contactNumberInputChange: false,
-        check_addressInputChange: false,
-        secureTextEntry: true,
-        securePasswordEntry: true,
-    });
-
-    const randGen = () => {
-
-        var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        var result = ""
-        var charactersLength = characters.length;
-
-        for ( var i = 0; i < 5 ; i++ ) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-
-        return result;
-
-    }
-    
-
-
-    const [otherUser, setOtherUser] = useState({});
     const [loggedInUser, setLoggedInUser] = useState({
         name: '',
         email: '',
@@ -84,13 +32,11 @@ const Chat = ({ navigation, route }) => {
         status: false,
         pushToken: ''
     });
-    const [chatId, setChatId] = useState(null);
-    const [sendersToken, setSendersToken] = useState("");
+    // const [newChatId, setChatId] = useState(null);
     const [receiversToken, setReceiversToken] = useState("");
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
-    const currentUserData = route.params.currentUserData;
-    const image = { uri: "https://reactjs.org/logo-og.png" };
-    const [receipentData,setReceipentData] = useState({
+    const isGroup = route.params.isGroup;
+    const [receipentData, setReceipentData] = useState({
         name: '',
         email: '',
         contactNumber: '',
@@ -98,36 +44,163 @@ const Chat = ({ navigation, route }) => {
         status: false,
         pushToken: ''
     });
-    const [receipentStatus,setReceipentStatus] = useState(false);
-
-
-    const [tempimpurl, settempimpurl] = useState("");
-    const [boolvar, setboolvar] = useState(false);
-    const [isImage, setIsImage] = useState(false);
+    const [receipentStatus, setReceipentStatus] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
+    const [groupData, setGroupData] = useState({
+        name: '',
+        profileImageUrl: '',
+        usersList: [],
+        chatId: ''
+    });
 
-    
+    useEffect(() => {
+        console.log("Is a group", isGroup);
+        // getRecepientDataFromDb();
+
+
+        try{
+            if(isGroup){
+                console.log("User Id at Chat.js ",userId)
+                fireDB.collection('groups').doc(userId).onSnapshot((snapshot) => {
+                    let gData = snapshot.data();
+                    setGroupData({
+                        ...gData
+                    })
+                });
+            }else{
+                fireDB.collection('users').doc(userId).onSnapshot((snapshot) => {
+                   
+                        let userData = snapshot.data();
+                        console.log("Getting data of other user here first: ",snapshot.data());
+                        setReceipentData({
+                            ...userData
+                        })
+                        console.log("setting recepient Status")
+                        setReceipentStatus(receipentData.status);
+                        setReceiversToken(userData.pushToken);
+                });
+            }
+        }catch(error){
+            console.log(error);
+        }
+
+        const unsubscribe = fireDB.collection('chats').doc(chatId).collection('chatData').onSnapshot(async (querySnapshot) => {
+            let allChats = [];
+            let response = await getChat(chatId);
+
+            querySnapshot.docChanges().map(async ({ doc }) => {
+                let message = doc.data();
+                message._id = doc.id;
+                message.createdAt = message.createdAt.toDate();
+                allChats.push(message);
+
+            })
+            allChats.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+            let userDetails = {
+                [loggedInUserId]: {
+                    name: name,
+                    avatar: avatar
+                },
+                [userId]: {
+                    name: receipentData.name,
+                    avatar: receipentData.profileImageUrl
+                }
+            }
+
+            if (allChats.length === 1) {
+                allChats = [...response, ...allChats];
+            }
+
+            allChats.forEach((message) => {
+                message["user"] = {
+                    _id: message.userId,
+                    ...userDetails[message.userId],
+                }
+                delete message.userId
+            })
+
+            if (allChats.length === 1) {
+                // setMessagesAfterSend([allChats]);
+            } else {
+                setMessages(allChats);
+            }
+
+        });
+        return () => unsubscribe();
+
+    }, [isFocused]);
+
+    useLayoutEffect(() => {
+        console.log('receipentName: ', receipentName);
+        navigation.setOptions({
+            title: "",
+            headerStyle: { backgroundColor: '#009387' },
+            headerLeft: () => (
+                <View style={{ flexDirection: 'row' }}>
+                    <UserImgWrapper>
+                        {
+                            console.log("Chat Id while sending", chatId)
+                        }
+                        <TouchableOpacity onPress={() => {
+                            if (!isGroup) {
+                                navigation.navigate("OtherUserDetails", {
+                                    otherUserId: userId,
+                                    chatId: chatId
+                                })
+                            } else {
+                                navigation.navigate("GroupProfile", {
+                                    groupId: userId,
+                                    chatId: chatId,
+                                    groupData: groupData
+                                });
+                            }
+                        }
+
+                        }>
+                            <UserImg style={{ margin: 0 }} source={{
+                                uri: receipentProfileImage,
+                            }} />
+                        </TouchableOpacity>
+                    </UserImgWrapper>
+                    <View style={{ flexDirection: 'column', margin: 20 }}>
+                        <Text style={{ fontSize: 22, fontWeight: '600' }}>{receipentName}</Text>
+                        {receipentData.status ?
+                            <Text style={{ marginTop: 5 }}>Online</Text> :
+                            <Text></Text>
+                        }
+                    </View>
+                </View>
+
+            )
+        })
+    }, [navigation]);
+
+
+    const randGen = () => {
+        var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        var result = ""
+        var charactersLength = characters.length;
+
+        for (var i = 0; i < 5; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+
+    }
+
     const getDownloadURL = async (randVar) => {
         try {
             let tempUrl = await storage.ref("/images/sharePhotos/").child(`${chatId}`).child(`${randVar}`).getDownloadURL();
-            setIsImage(true);
-
+            // setIsImage(true)
             return tempUrl;
-            // setboolvar(true);
 
-            // console.log('chatId, messages, loggedInUserId: ', chatId, messages[0], loggedInUserId);
-            // storeChat(chatId, messages, loggedInUserId);
-            // console.log('stored/sent messages are:  ',messages);
-            
         } catch (error) {
-            console.log('error in getDownloadURL function : ', error);   
+            console.log('error in getDownloadURL function : ', error);
         }
     }
 
-     
-        
     const uploadPhoto = (image, randVar) => {
-        return new Promise( async (resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 console.log('image argument:: ', image.uri);
                 const response = await fetch(image.uri)
@@ -143,76 +216,45 @@ const Chat = ({ navigation, route }) => {
         })
     }
 
-    //images/sharePhotos/chatId/image
-
     const sendPhoto = async () => {
         try {
-            
             let imgURI = null;
-
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
                 base64: true,
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 1
-              });
-          
-            if (!result.cancelled) {  
-                imgURI=result.uri;
-                setPhoto(result);
+            });
 
+            if (!result.cancelled) {
+                imgURI = result.uri;
+                setPhoto(result);
                 let randVarInSendPhoto = randGen();
 
                 // upload photo
-                uploadPhoto(result,randVarInSendPhoto).then(async () => {
+                uploadPhoto(result, randVarInSendPhoto).then(async () => {
                     console.log('image uploaded');
                     // get URL after uploading
                     let imageUrl = await getDownloadURL(randVarInSendPhoto);
                     console.log('imageUrl: ', imageUrl);
                     setImageUrl(imageUrl);
-                    setIsImage(true);
                     // store chat
-                    // let chat = await storeChat()
-                    onSend([{image: imageUrl}]);
-
-                    // store message in chat DB
-                    // let message = {
-                    //     image: imageUrl
-                    // }
-                    // console.log('message: ', message);
-                    // console.log('uuidv4(): ', uuidv4());
-
-                    // let newMessage = [{
-                    //     // _id: uuid.v4(),
-                    //     createdAt: new Date(),
-                    //     image: imageUrl,
-                    //     user: {
-                    //         _id: loggedInUserId,
-                    //         avatar: avatar,
-                    //         name: name
-                    //     }
-                    // }]
-                    // console.log('newMessage: ', newMessage);
-
-                    // onSend(newMessage);
+                    onSend([{ image: imageUrl }]);
 
                 }).catch((error) => {
                     alert("Could not upload Image.");
                     console.log('error in uploading: ', error);
-
                 })
-    
             }
-
 
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
 
-    
+
     function InputBox() {
         return (
             <View style={styles.inputcontainer}>
@@ -224,31 +266,16 @@ const Chat = ({ navigation, route }) => {
         );
     }
 
-    
-
-    function testpress() {
-        console.log("dots pressed");
-        return (
-            <View>
-                <Picker style={{ height: 20, width: 150 }} mode={DropDownPicker}>
-                    <Picker.Item label='View profile' > </Picker.Item>
-                    <Picker.Item label='Delete chat '> </Picker.Item>
-                </Picker>
-            </View>
-
-        );
-    }
-
 
     function renderSend(props) {
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center', height: 60 }}>
-                <Icon name="camera"  size={32} style={{ marginHorizontal: 5 }} onPress={sendPhoto} />
+                <Icon name="camera" size={32} style={{ marginHorizontal: 5 }} onPress={sendPhoto} />
                 <Send {...props}>
                     <View style={styles.btnSend2}>
-                    <IconButton icon="send-circle" size={32} color="#009387" />
+                        <IconButton icon="send-circle" size={32} color="#009387" />
 
-                    {/* <Icon name="ios-send" size={24} color='#6646ee' /> */}
+                        {/* <Icon name="ios-send" size={24} color='#6646ee' /> */}
                     </View>
                 </Send>
             </View>
@@ -261,134 +288,35 @@ const Chat = ({ navigation, route }) => {
         );
     }
 
-    useEffect(() => {
-        getRecepientDataFromDb();
-        getMessages();
-    }, []);
-
     const getRecepientDataFromDb = async () => {
-        try{
-            let response = await fireDB.collection('users').doc(userId).get();
-            console.log('userData: ', response.data());
-            let userData = response.data();
-            setReceipentData({
-                ...userData
-            })
-            console.log("setting recepient Status")
-            setReceipentStatus(receipentData.status);
-            setReceiversToken(userData.pushToken);
+        try {
+            if (isGroup) {
+                console.log("User Id at Chat.js ", userId)
+                let response = await fireDB.collection('groups').doc(userId).get();
+                console.log('group data found in Chat.js', response.data());
+                let gData = response.data();
+                setGroupData({
+                    ...gData
+                })
+                console.log(groupData);
 
-        }catch(error){
+
+            } else {
+                let response = await fireDB.collection('users').doc(userId).get();
+                console.log('userData: ', response.data());
+                let userData = response.data();
+                setReceipentData({
+                    ...userData
+                })
+                console.log("setting recepient Status")
+                setReceipentStatus(receipentData.status);
+                setReceiversToken(userData.pushToken);
+            }
+
+
+        } catch (error) {
             console.log(error);
         }
-
-        // try{
-        //     fireDB.collection('users').doc(userId).onSnapshot(snapshot =>  {
-        //         console.log("getting receipent data",snapshot.data())
-        //         updateRecepientData(snapshot.data())
-        //     })
-        // }catch(error){
-        //     console.log(error);
-        // }
-    }
-
-    const updateRecepientData = (data) =>  {
-        setReceipentData({
-            ...data
-        })
-    }
-    
-    //view profile and view profile photo in 3 dots, showimage mein true /false as boolean; kill gap between message and border and keep different colors for sender and receiver texts, clear chat
-    // 009387
-    
-    useLayoutEffect(() => {
-        // getMessages();
-
-        console.log('receipentName: ', receipentName);
-        navigation.setOptions({
-            title: receipentName,
-            headerStyle: { backgroundColor: '#009387' },
-            headerLeft: () => (
-                <View style={{ marginLeft: 5, flexDirection: 'row' }}>
-                    <UserImgWrapper>
-                        {
-                            console.log("Chat Id while sending",chatId)
-                        }
-                        <TouchableOpacity onPress={() => {navigation.navigate("OtherUserDetails",{
-                            otherUserId: userId,
-                            chatId: chatId
-                        })}}>
-                        <UserImg style={{ marginRight: 20 }} source={{
-                            uri: receipentProfileImage,
-                        }} />
-                        </TouchableOpacity>
-                    </UserImgWrapper>
-                </View>
-
-            ),
-            headerRight: () => (
-                <View style={{
-                    flexDirection: 'row',
-
-                    justifyContent: 'space-between',
-                    marginRight: 10,
-
-                }}>
-                    {/* <Text>{receipentName}</Text> */}
-                {
-                    console.log("recepient status",receipentData.status)
-                }   
-                    {receipentData.status ? 
-                        
-                        <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}>Online</Text> :
-                        <Text style={{ marginTop: 35, width: 100, marginRight: 140 }}></Text>
-                        }
-
-                    {/* <TouchableOpacity onPress={testpress}>
-                        <MaterialCommunityIcons style={{ marginTop: 5 }} name="dots-vertical" size={36} color={'white'} />
-
-                    </TouchableOpacity> */}
-
-
-                </View>
-            )
-        })
-    }, [navigation]);
-
-    const getMessages = async () => {
-
-        let loggedInUser = await getUserDetails(loggedInUserId);
-        setLoggedInUser({...loggedInUser});
-        setSendersToken(loggedInUser.pushToken);
-        // let otherUser = await getUserDetails(userId);
-        // setOtherUser(otherUser);
-        console.log("Display :: ", sendersToken, receiversToken);
-        let chatId = await getChatId(loggedInUserId, userId);
-        setChatId(chatId);
-        console.log('chatId get messages: ', chatId);
-
-        let allMessages = await getChat(chatId);
-
-        let userDetails = {
-            [loggedInUserId]: {
-                name: loggedInUser.name,
-                avatar: loggedInUser.profileImageUrl
-            },
-            [userId]: {
-                name: receipentData.name,
-                avatar: receipentData.profileImageUrl
-            }
-        }
-
-        let result = allMessages.forEach((message) => {
-            message["user"] = {
-                _id: message.userId,
-                ...userDetails[message.userId],
-            }
-            delete message.userId
-        })
-
-        setMessages(allMessages);
 
     }
 
@@ -401,7 +329,7 @@ const Chat = ({ navigation, route }) => {
         try {
             let response = await axios.post("https://exp.host/--/api/v2/push/send", {
                 "to": token,
-                "title" : `Convers - ${name}`,
+                "title": `Convers - ${name}`,
                 "body": message
             }, {
                 headers: {
@@ -411,46 +339,46 @@ const Chat = ({ navigation, route }) => {
                     "content-type": "application/json"
                 }
             })
-            
+            console.log('response: ', response);
+
         } catch (error) {
-            console.log('error: ', error);
-            
+            console.log('error notify user: ', error);
+
         }
     }
 
     const onSend = useCallback(async (messages = []) => {
+        setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+
         console.log('messages: ', messages);
+        let isImage = false;
+        if (chatId) {
+            console.log('chatId on send: ', chatId);
 
-        let chatId = await getChatId(loggedInUserId, userId);
-        console.log('chatId on send: ', chatId);
-        setChatId(chatId);
-
-        console.log('onsend called');
-        console.log('value of image url variable tempimpurl is:  ', tempimpurl);
-        console.log('value of boolean variable boolvar is:  ', boolvar);
-
-        console.log('isImage: ', messages[0].image);
-        if(messages[0].image){
-            // setMessages(imageUrl);
-            // isImage = false;
-            setIsImage(true)
-            console.log('isImage: ', isImage);
-            messages[0].createdAt = new Date();
+            console.log('isImage: ', isImage, messages[0].image);
+            if (messages[0].image) {
+                isImage = true;
+                console.log('isImage: ', isImage);
+                messages[0].createdAt = new Date();
+            } else {
+                isImage = false;
+                console.log('isImage: ', isImage);
+            }
         }
 
-        
-        // setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-
         let newChatId = await storeChat(chatId, messages[0], loggedInUserId, isImage);
-        console.log('newChatId: ', newChatId);
+        if (!chatId) {
+            console.log('newChatId: ', newChatId);
+            await addChatId(userId, loggedInUserId, newChatId);
+        }
 
-        if(isImage) {
+        if (isImage) {
             messages[0]._id = "1",
-            messages[0].user = {
-                _id: loggedInUserId,
-                name: name,
-                avatar: avatar
-            }
+                messages[0].user = {
+                    _id: loggedInUserId,
+                    name: name,
+                    avatar: avatar
+                }
 
         }
 
@@ -458,9 +386,8 @@ const Chat = ({ navigation, route }) => {
         setMessagesAfterSend(messages);
 
         // notify other user
-
-        // console.log('otherUser, lçnotification exchange :: ", otherUser, loggedInUser);
-        notifyUser( loggedInUser.name, receiversToken, messages[0].text);
+        console.log('loggedInUser: ', loggedInUser);
+        notifyUser(name, receiversToken, messages[0].text);
 
 
     }, []);
@@ -471,7 +398,7 @@ const Chat = ({ navigation, route }) => {
                 {...props}
                 wrapperStyle={{
                     right: {
-                        backgroundColor: 'green',
+                        backgroundColor: '#009387',
                     },
                 }}
                 textStyle={{
@@ -484,34 +411,24 @@ const Chat = ({ navigation, route }) => {
 
     };
 
-
-
-
-
     return (
         <ImageBackground
             source={require('../assets/wapp_background.jpeg')}
+            resizeMode='cover'
             style={{ flex: 1 }}
         >
             <GiftedChat
-
-
                 scrollToBottom
                 scrollToBottomComponent={scrollToBottomComponent}
-
                 renderBubble={renderBubblefunc}
-
                 sendingContainer={InputBox}
-
                 onSend={messages => onSend(messages)}
                 alwaysShowSend
                 minComposerHeight={40}
                 minInputToolbarHeight={60}
                 messages={messages}
                 showAvatarForEveryMessage={false}
-                
                 renderSend={renderSend}
-
                 user={{
                     _id: loggedInUserId,
                     name: name,
@@ -585,9 +502,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 10,
-        
         borderRadius: 50
-      }
+    }
 
 
 });

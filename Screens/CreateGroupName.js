@@ -7,33 +7,30 @@ import {
     Platform,
     StyleSheet,
     StatusBar,
-    Alert,
-    Button,
     Dimensions, Image
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import { auth,storage } from "../firebase";
+import { auth, storage } from "../Firebase";
 import 'react-native-get-random-values';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import * as ImagePicker from 'expo-image-picker';
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
-const CreateGroupName = ({navigation,route}) => {
+const CreateGroupName = ({ navigation, route }) => {
 
     const [data, setData] = useState({
         groupName: '',
-        groupImage: '',
         groupId: uuidv4(),
         groupImageUrl: '',
         check_textInputChange: false,
     });
     const [photo, setPhoto] = useState('');
-    const [url, setUrl] = useState('');
+    const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/convers-e6df7.appspot.com/o/group-user-img.jpeg?alt=media&token=df8dc433-e443-4bad-bd66-fb75c4fd431c');
     const textInputChange = (val) => {
 
         if (val.length >= 1) {
@@ -52,28 +49,28 @@ const CreateGroupName = ({navigation,route}) => {
     }
 
     const goToAddPeoplePage = () => {
-        if(data.check_textInputChange){
-            navigation.navigate('AddPeopleInGroup',{
-                groupName: data.groupName
+        if (data.check_textInputChange) {
+            navigation.navigate('AddPeopleInGroup', {
+                groupName: data.groupName,
+                groupImageUrl: data.groupImageUrl,
+                groupId: data.groupId
             });
-        }else{
+        } else {
             console.log("hi")
         }
     }
 
     const changeProfileImage = async () => {
         try {
-            // setUrl(data.profileImageUrl);
-            // console.log('old old fetched from db ::: url: ', data.profileImageUrl);
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
                 base64: true,
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 1
-              });
-          
-            if (!result.cancelled) {  
+            });
+
+            if (!result.cancelled) {
                 console.log('result: ', result.uri);
                 setPhoto(result);
 
@@ -86,11 +83,11 @@ const CreateGroupName = ({navigation,route}) => {
             }
         } catch (error) {
             console.log('error: ', error);
-            
+
         }
     }
     const uploadPhoto = (image) => {
-        return new Promise( async (resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 // upload
                 console.log('image argument:: ', image.uri);
@@ -99,7 +96,7 @@ const CreateGroupName = ({navigation,route}) => {
                 var ref = storage.ref("images/").child(`${data.groupId}`);
                 console.log("_____________________LOADING...____________________");
                 resolve(ref.put(blob));
-                
+
             } catch (error) {
                 console.log('error: ', error);
                 reject(error);
@@ -114,34 +111,38 @@ const CreateGroupName = ({navigation,route}) => {
             let tempUrl = await storage.ref("images").child(`${data.groupId}`).getDownloadURL();
             setUrl(tempUrl);
             console.log('new url: ', tempUrl);
-            
+            setData({
+                ...data,
+                groupImageUrl: url
+            });
+
         } catch (error) {
             console.log('error: ', error);
         }
     }
 
-    return(
+    return (
         <View style={styles.container}>
-            <StatusBar backgroundColor='#009387' barStyle="light-content" />
+            <StatusBar backgroundColor='#0bb4e3' barStyle="light-content" />
             <View style={styles.header}>
                 <Text style={styles.text_header}>Create New Group!</Text>
             </View>
             <View>
-                    <Image
-                        source={{ uri: url }}
-                        alt = {require(`../assets/default-user-image.png`)}
-                        style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
-                    />
-                    <View style={styles.button}>
-                    <TouchableOpacity 
+                <Image
+                    source={{ uri: url }}
+                    alt={require(`../assets/default-user-image.png`)}
+                    style={{ width: 170, height: 170, borderRadius: 100, alignSelf: "center" }}
+                />
+                <View style={styles.button}>
+                    <TouchableOpacity
                         onPress={changeProfileImage}
                     >
                         <Text style={[styles.textSign, {
                             color: '#ECCC01', padding: 10
                         }]}>Set Group image</Text>
                     </TouchableOpacity>
-                    </View>
                 </View>
+            </View>
             <Animatable.View
                 animation='fadeInUpBig'
                 style={styles.footer}
@@ -157,22 +158,21 @@ const CreateGroupName = ({navigation,route}) => {
                         placeholder="Group Name"
                         style={styles.textInput}
                         autoCapitalize="none"
-                    onChangeText={(val) => textInputChange(val)}
+                        onChangeText={(val) => textInputChange(val)}
                     />
                     {data.check_textInputChange ?
-              <Animatable.View
-                  animation="bounceIn"
-              >
-                  <Feather
-                      name="check-circle"
-                      color="green"
-                      size={20}
-                  />
-              </Animatable.View>
-              : null}
+                        <Animatable.View
+                            animation="bounceIn"
+                        >
+                            <Feather
+                                name="check-circle"
+                                color="green"
+                                size={20}
+                            />
+                        </Animatable.View>
+                        : null}
                 </View>
                 <View style={styles.button}>
-                    {/* <Button style={styles.signIn} title="Sign In" onPress={loginHandle}/> */}
 
                     <TouchableOpacity onPress={goToAddPeoplePage}>
                         <LinearGradient
@@ -192,7 +192,7 @@ const CreateGroupName = ({navigation,route}) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#009387'
+        backgroundColor: '#0bb4e3'
     },
     header: {
         flex: 1,

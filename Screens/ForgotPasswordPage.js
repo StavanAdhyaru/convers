@@ -7,15 +7,13 @@ import {
     Platform,
     StyleSheet,
     StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image
+    Dimensions
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import { auth } from "../firebase";
+import { auth } from "../Firebase";
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
@@ -27,14 +25,14 @@ const ForgotPasswordPage = ({ navigation }) => {
     });
 
     const forgotPasswordSendEmail = () => {
-            if(data.check_textInputChange){
-                auth.sendPasswordResetEmail(data.email)
+        if (data.check_textInputChange) {
+            auth.sendPasswordResetEmail(data.email)
                 .then(function () {
                     alert('Please Check your email for password reset, check spam if not in inbox');
                 }).catch(function (e) {
                     console.log(e)
                 })
-            }
+        }
     }
     const textInputChange = (val) => {
         if (val.length !== 0) {
@@ -99,8 +97,6 @@ const ForgotPasswordPage = ({ navigation }) => {
                         : null}
                 </View>
                 <View style={styles.button}>
-                    {/* <Button style={styles.signIn} title="Sign In" onPress={loginHandle}/> */}
-
                     <TouchableOpacity onPress={forgotPasswordSendEmail}>
                         <LinearGradient
                             colors={['#08d4c4', '#01ab9d']}

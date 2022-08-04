@@ -8,31 +8,18 @@ import {
     StyleSheet,
     StatusBar,
     Alert,
-    Button,
-    Dimensions, Image
+    Dimensions
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import { auth } from "../firebase";
+import { auth } from "../Firebase";
 
 const { height } = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
 const Login = ({ navigation }) => {
-
-
-
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
-            if (user) {
-                navigation.replace("Home")
-            }
-        })
-
-        return unsubscribe;
-    }, []);
 
     const [data, setData] = useState({
         email: '',
@@ -100,20 +87,37 @@ const Login = ({ navigation }) => {
                 .signInWithEmailAndPassword(data.email, data.password)
                 .then(userCredentials => {
                     const user = userCredentials.user;
-                    console.log("Logged in with ", user.email);
-                    navigation.replace("Home");
+                    if (auth.currentUser.emailVerified) {
+                        console.log("Logged in with ", user.email);
+                        navigation.replace("Home");
+                    } else {
+                        userCredentials.user.sendEmailVerification();
+                        alert("Varify Email Address");
+                    }
+
                 })
                 .catch(error => {
                     console.log(error);
                     Alert.alert("Email or password is incorrect");
                 });
-        }else if (!data.check_textInputChange){
+        } else if (!data.check_textInputChange) {
             Alert.alert("Please enter a valid email");
-        }else if (!data.check_passwordInputChange){
+        } else if (!data.check_passwordInputChange) {
             Alert.alert("Please enter a valid password");
         }
     }
 
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            if (user) {
+                if (user.emailVerified) {
+                    navigation.replace("Home");
+                }
+            }
+        })
+
+        return unsubscribe;
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -136,19 +140,19 @@ const Login = ({ navigation }) => {
                         placeholder="Your Email"
                         style={styles.textInput}
                         autoCapitalize="none"
-                    onChangeText={(val) => textInputChange(val)}
+                        onChangeText={(val) => textInputChange(val)}
                     />
                     {data.check_textInputChange ?
-              <Animatable.View
-                  animation="bounceIn"
-              >
-                  <Feather
-                      name="check-circle"
-                      color="green"
-                      size={20}
-                  />
-              </Animatable.View>
-              : null}
+                        <Animatable.View
+                            animation="bounceIn"
+                        >
+                            <Feather
+                                name="check-circle"
+                                color="green"
+                                size={20}
+                            />
+                        </Animatable.View>
+                        : null}
                 </View>
                 <Text style={[styles.text_footer, {
                     marginTop: 35
@@ -164,28 +168,26 @@ const Login = ({ navigation }) => {
                         style={styles.textInput}
                         secureTextEntry={data.secureTextEntry ? true : false}
                         autoCapitalize="none"
-                    onChangeText={(val) => handlePasswordChange(val)}
+                        onChangeText={(val) => handlePasswordChange(val)}
                     />
                     <TouchableOpacity
-                    onPress={updateSecureTextEntry}
+                        onPress={updateSecureTextEntry}
                     >
                         {data.secureTextEntry ?
-                  <Feather
-                      name="eye-off"
-                      color="grey"
-                      size={20}
-                  />
-                  :
-                  <Feather
-                      name="eye"
-                      color="grey"
-                      size={20}
-                  />}
+                            <Feather
+                                name="eye-off"
+                                color="grey"
+                                size={20}
+                            />
+                            :
+                            <Feather
+                                name="eye"
+                                color="grey"
+                                size={20}
+                            />}
                     </TouchableOpacity>
                 </View>
                 <View style={styles.button}>
-                    {/* <Button style={styles.signIn} title="Sign In" onPress={loginHandle}/> */}
-
                     <TouchableOpacity onPress={loginHandle}>
                         <LinearGradient
                             colors={['#08d4c4', '#01ab9d']}

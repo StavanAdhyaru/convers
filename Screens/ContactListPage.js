@@ -2,46 +2,36 @@ import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
     PostTime,
     MessageText,
     TextSection,
 } from './Styles/MessageStyles';
-import { Animated } from 'react-native';
 import {
     View,
-    Text,
     TouchableOpacity,
     TextInput,
-    Platform,
     StyleSheet,
-    Pressable, 
-    StatusBar,
-    Alert,
-    Button,
-    Dimensions, Image, FlatList, Menu
+    Image,
+    FlatList
 } from 'react-native';
-import { getUserDetails, getAllUsers } from '../API/user';
-import { getChat } from '../API/chat';
-import { auth, fireDB } from '../firebase';
+import { getUserDetails, getGroupDetails } from '../Helpers/User';
+import { getChat } from '../Helpers/Chat';
+import { auth, fireDB } from '../Firebase';
 import { useEffect, useState } from 'react';
-import { AsyncStorage } from 'react-native';
-// import Icon from 'react-native-ico-material-design';
 import Feather from 'react-native-vector-icons/Feather';
+import { useIsFocused } from "@react-navigation/native";
 
 
 const ContactListPage = ({ navigation, route }) => {
+    const isFocused = useIsFocused();
     const [currentUser, setCurrentUser] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
     const [searchBoolean, setBoolean] = useState(true);
     const [searchData, setSearchData] = useState([]);
     const currentUserId = auth.currentUser.uid;
-    const [dataFromState, setData] = useState(null);
-    let userData  = [];
-    
+    let userData = [];
 
     const searchName = (input) => {
         let data = allUsers;
@@ -56,20 +46,17 @@ const ContactListPage = ({ navigation, route }) => {
             setSearchData(searchD);
         }
     }
-    
+
     useEffect(() => {
         readUser();
-
         getAllUsersFromDB();
 
-    }, []);
+    }, [isFocused]);
 
 
     const readUser = async () => {
         const getUser = await getUserDetails(currentUserId)
-        // await AsyncStorage.setItem('user', JSON.stringify(getUser));
         setCurrentUser(getUser);
-        // console.log("user: ",currentUser )
     }
 
     const getAllUsersFromDB = async () => {
@@ -78,32 +65,23 @@ const ContactListPage = ({ navigation, route }) => {
             const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
                 const eachUser = doc.data();
                 eachUser.id = doc.id;
-                eachUser.userData = await getUserDetails(doc.id);
+
+                if (eachUser.isGroup) {
+                    eachUser.userData = await getGroupDetails(doc.id);
+                } else {
+                    eachUser.userData = await getUserDetails(doc.id);
+                }
+
                 eachUser.chatData = await getChat(eachUser.chatId);
-                eachUser.messageCount = eachUser.chatData.length;
-                // console.log("each User",eachUser);
                 userData.push(eachUser);
-                userData = userData.sort((a, b) => b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime());
+                userData = userData.sort((a, b) => {
+                    if (a.chatData[0] != null && b.chatData[0] != null) {
+                        b.chatData[0].createdAt.getTime() - a.chatData[0].createdAt.getTime()
+                    }
+                });
                 setAllUsers(userData);
             });
-
-
-            // console.log("User Data: ",userData);
-            // setAllUsers(userData);
-
-            // console.log("All Users ",allUsers);
-            // console.log("one data",allUsers[0].chatData[allUsers[0].chatData.length-1].createdAt);
         })
-
-
-        // let tempAllUsers = await getAllUsers();
-        // // let userList = tempAllUsers.filter((element) => element.id != currentUserId);
-        // setAllUsers(userList);
-        // setAllUsersBackup(userList);
-        // let tempAllUsers = await getAllUsers();
-        // let userList = tempAllUsers.filter((element) => element.id != currentUserId);
-        // setAllUsers(userList);
-        // setAllUsersBackup(userList);
 
     }
 
@@ -116,17 +94,12 @@ const ContactListPage = ({ navigation, route }) => {
                     color="#009387"
                     size={20}
                 />
-
-
-
-                {/* SearchIcon = <SearchIcon/> */}
                 <TextInput style={styles.searchText}
-                    placeholder="Search Friend"
+                    placeholder="Enter Name"
                     placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)
                     }}
-                // style={{ fontSize: 18 }}
                 />
                 <TouchableOpacity onPress={() => navigation.navigate('CreateGroupName')}>
                     <Feather style={styles.groupIcon}
@@ -156,21 +129,29 @@ const ContactListPage = ({ navigation, route }) => {
                         loggedInUserId: currentUserId,
                         name: currentUser.name,
                         avatar: currentUser.profileImageUrl,
-                        receipentName: item.userData.name,
-                        receipentProfileImage: item.userData.profileImageUrl
+                        receipentName: item.userData ? item.userData.name : "",
+                        receipentProfileImage: item.userData ? item.userData.profileImageUrl : "",
+                        chatId: item.chatId,
+                        isGroup: item.isGroup
                     })}>
                         <UserInfo>
 
                             <Image
-                                source={{ uri: item.userData.profileImageUrl }}
+                                source={{ uri: item.userData ? item.userData.profileImageUrl : "" }}
                                 style={{ width: 50, height: 50, borderRadius: 100, alignSelf: "center" }}
                             />
                             <TextSection>
                                 <UserInfoText>
-                                    <UserName>{item.userData.name}</UserName>
-                                    <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime>
+                                    <UserName>{item.userData ? item.userData.name : ""}</UserName>
+                                    {
+                                        item.chatData[0] != null ? <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime> : <PostTime></PostTime>
+                                    }
+
                                 </UserInfoText>
-                                <MessageText>{item.chatData[0].text}</MessageText>
+                                {
+                                    item.chatData[0] != null ? <MessageText>{item.chatData[0].text}</MessageText> : <MessageText></MessageText>
+                                }
+
                             </TextSection>
                         </UserInfo>
                     </Card>

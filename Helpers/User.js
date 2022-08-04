@@ -1,5 +1,5 @@
-import { auth, fireDB, storage } from '../firebase';
-import { getChat } from './chat'
+import { auth, fireDB, storage } from '../Firebase';
+import { getChat } from './Chat'
 const userDBRef = fireDB.collection('users');
 
 const getUserDetails = async (userId) => {
@@ -18,20 +18,21 @@ const getUserDetails = async (userId) => {
     })
 }
 
-// const findUserEmail = async (emailId) => {
-//     return new Promise((resolve, reject) => {
-//         try {
-//          userDBRef.where('email', '==', emailId).get().then((doc) => {
-//                 resolve(doc.data());
-//             }).catch((error) => {
-//                 reject(error);
-//             });
+const getGroupDetails = async (groupId) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const data = fireDB.collection("groups").doc(groupId).get().then((doc) => {
+                resolve(doc.data());
+            }).catch((error) => {
+                reject(error);
+            })
 
-//         } catch (error) {
-//             console.log('error: ', error)
-//         }
-//     })
-// }
+        } catch (error) {
+            console.log('error: ', error);
+
+        }
+    })
+}
 
 const getSingleUserData = async (userId) => {
     try {
@@ -44,37 +45,29 @@ const getSingleUserData = async (userId) => {
 }
 
 const findUserByEmail = async (email) => {
-
     return new Promise((resolve, reject) => {
-    
-        try{
-           userDBRef.where('email','==',email).get().then((snapshot) => {
-            if(snapshot.isempty){
-                console.log('No matching documents.');
-                // return;
-            }
-            snapshot.forEach(doc => {
-                console.log(doc.id, '=>', doc.data());
-                return doc.data();
+        try {
+            userDBRef.where('email', '==', email).get().then((snapshot) => {
+                if (snapshot.isempty) {
+                    console.log('No matching documents.');
+                }
+                snapshot.forEach(doc => {
+                    console.log(doc.id, '=>', doc.data());
+                    return doc.data();
+                });
             });
-           });
-        }catch(error){
-            console.log("Errroror : ",error)
+        } catch (error) {
+            console.log("Errroror : ", error)
         }
     })
 }
 
-const setUserStatus = async (userId,userData,activeOrNot) => {
+const setUserStatus = async (userId, userData, activeOrNot) => {
 
     console.log("UserId:", userId)
     try {
         userDBRef.doc(userId).update({
-            status: activeOrNot,
-            // name: userData.name,
-            // contactNumber: userData.contactNumber,
-            // email: userData.email,
-            // profileImageUrl: userData.profileImageUrl
-
+            status: activeOrNot
         });
     } catch (error) {
         console.log('error: ', error);
@@ -124,7 +117,11 @@ const getChatId = (loggedInUserId, userId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let doc = await userDBRef.doc(loggedInUserId).collection('chatIdList').doc(userId).get()
-            resolve(doc.data().chatId);
+            console.log('doc.data(): ', doc.data());
+            if (doc.data()) {
+                resolve(doc.data().chatId);
+            }
+            resolve(null);
 
         } catch (error) {
             reject(error);
@@ -143,17 +140,6 @@ const savePushNotificationToken = (userId, token) => {
         }
     })
 }
-
-// const addPushNotificationToken = (userId, token) => {
-//     return new Promise((resolve, reject) => {
-//         try {
-
-
-//         } catch (error) {
-//             reject(error);
-//         }
-//     }
-// }
 
 const getMultipleChats = async (userId) => {
 
@@ -181,4 +167,4 @@ const getMultipleChats = async (userId) => {
     })
 }
 
-export { getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken, findUserByEmail }
+export { getUserDetails, getAllUsers, addChatId, getChatId, setUserStatus, getSingleUserData, getMultipleChats, savePushNotificationToken, findUserByEmail, getGroupDetails }

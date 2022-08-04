@@ -2,16 +2,12 @@ import {
     Container,
     Card,
     UserInfo,
-    UserImgWrapper,
-    UserImg,
     UserInfoText,
     UserName,
-    PostTime,
-    MessageText,
     TextSection,
 } from './Styles/MessageStyles';
 import { Animated } from 'react-native';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import {
     View,
     Text,
@@ -19,19 +15,12 @@ import {
     TextInput,
     Platform,
     StyleSheet,
-    Pressable,
-    StatusBar,
-    Alert,
-    Button,
     Dimensions, Image, FlatList, Menu
 } from 'react-native';
-import { getUserDetails, getAllUsers } from '../API/user';
-import { auth, fireDB } from '../firebase';
-import { useEffect, useState,useLayoutEffect } from 'react';
-import { getChat,storeChatForGroup } from '../API/chat';
-// import Icon from 'react-native-ico-material-design';
+import { getUserDetails, getAllUsers } from '../Helpers/User';
+import { auth, fireDB } from '../Firebase';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
-import { useRadioGroup } from '@material-ui/core';
 
 
 const AddPeopleInGroup = ({ navigation, route }) => {
@@ -42,40 +31,72 @@ const AddPeopleInGroup = ({ navigation, route }) => {
     const currentUserId = auth.currentUser.uid;
     let newUserData = [];
     let usersInGroup = [];
-    const [refresh,setRefresh] = useState(false);
+    const [usersInGroupState, setUsersInGroupState] = useState([]);
+    let userIdsInGroup = [];
+    const [refresh, setRefresh] = useState(false);
+    const groupName = route.params.groupName;
+    const groupImageUrl = route.params.groupImageUrl;
+    const groupId = route.params.groupId;
+    const [tempUserIdState, setTempUserIdState] = useState([])
 
     useEffect(() => {
         readUser();
-        // getAlredyUser();
         getAllUsersFromDB();
 
     }, []);
+
     useLayoutEffect(() => {
 
         navigation.setOptions({
             title: "Add Contacts",
             headerStyle: { backgroundColor: '#009387' },
             headerRight: () => (
-                // <View style={{
-                //     flexDirection: 'row',
-
-                //     justifyContent: 'space-between',
-                //     marginLeft: 200,
-
-                // }}>
                     <TouchableOpacity onPress={generateGroup}>
-                        <Text style={{ marginTop: 35, width: 100, marginRight: 140,textAlign:'right' }}>Create Group</Text>
+                        <Text style={{ marginTop: 5, marginRight: 5,textAlign:'right', fontSize: 18, }}>CREATE </Text>
                     </TouchableOpacity>
-
-                // </View>
             )
         })
     }, [navigation]);
 
     const generateGroup = async () => {
         let chatID = uuidv4();
-        console.log("Created Chat Id",chatID);
-        await storeChatForGroup(chatID);
+        console.log("Created Chat Id", chatID);
+        console.log("Group Name", groupName);
+        console.log("Group Id", groupId);
+        console.log("userse In Group", usersInGroupState);
+        await createGroup(chatID);
+
+    }
+
+    const createGroup = async (chatId) => {
+        const tempArray = tempUserIdState;
+        tempArray.push(currentUserId);
+        console.log("Temp Array ", tempArray);
+        await fireDB.collection('groups').doc(groupId).set({
+            name: groupName,
+            profileImageUrl: groupImageUrl,
+            chatID: chatId,
+            usersList: tempArray,
+            createdBy: currentUserId
+        })
+        storeChatIdtoUser(chatId);
+    }
+
+    const storeChatIdtoUser = async (chatID) => {
+        tempUserIdState.forEach(async (userId) => {
+            console.log("Adding");
+            console.log(userId);
+            await fireDB.collection('users').doc(userId).collection('chatIdList').doc(groupId).set({
+                chatId: chatID,
+                isGroup: true
+            })
+        })
+
+        await fireDB.collection('users').doc(currentUserId).collection('chatIdList').doc(groupId).set({
+            chatId: chatID,
+            isGroup: true
+        })
+        navigation.navigate('Home');
     }
 
     const searchName = (input) => {
@@ -92,32 +113,26 @@ const AddPeopleInGroup = ({ navigation, route }) => {
         }
     }
 
-    // const getAlredyUser = async () => {
 
-    //     fireDB.collection('users').doc(auth.currentUser.uid).collection("chatIdList").onSnapshot((querySnapshot) => {
-    //         const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
-    //             const eachUser = doc.data();
-    //             eachUser.id = doc.id;
-    //             userData.push(eachUser.id);
-
-    //         });
-
-    //     })
-    // }
     const getAllUsersFromDB = async () => {
-        fireDB.collection('users').onSnapshot((querySnapshot) => {
+        fireDB.collection('users').doc(currentUserId).collection("chatIdList").onSnapshot((querySnapshot) => {
             const eachUserConnected = querySnapshot.docChanges().map(async ({ doc }) => {
                 const eachUser = doc.data();
                 eachUser.id = doc.id;
-                if (doc.id === currentUserId) {
+                if (eachUser.isGroup) {
 
                 } else {
-                    eachUser.userData = await getUserDetails(doc.id);
-                    eachUser.added = false;
-                    newUserData.push(eachUser);
-                    newUserData = newUserData.sort((a, b) => b.userData.name - a.userData.name);
-                    setAllUsers(newUserData);
+                    if (doc.id === currentUserId) {
+
+                    } else {
+                        eachUser.userData = await getUserDetails(doc.id);
+                        eachUser.added = false;
+                        newUserData.push(eachUser);
+                        newUserData = newUserData.sort((a, b) => b.userData.name - a.userData.name);
+                        setAllUsers(newUserData);
+                    }
                 }
+
             })
         })
     }
@@ -141,16 +156,12 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                     size={20}
                 />
 
-
-
-                {/* SearchIcon = <SearchIcon/> */}
                 <TextInput style={styles.searchText}
                     placeholder="Search Friend"
                     placeholderTextColor={"#009387"}
                     onChangeText={(input) => {
                         searchName(input)
                     }}
-                // style={{ fontSize: 18 }}
                 />
 
             </View>
@@ -163,71 +174,23 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                         onPress={() => {
 
                             const tempArray = allUsers;
-                            let flag = true;
                             console.log("Pressed")
-                            for(let i=0;i<usersInGroup.length;i++){
-                                if(item.id === usersInGroup[i].id){
-                                    usersInGroup.splice(i,1);
-                                    console.log("Hello")
-                                    // for(let i=0;i<tempArray.length;i++){
-                                    //     if(item.id === tempArray.id){
-                                    //         tempArray[i].added = false;
-                                    //         setAllUsers(tempArray);
-                                    //         break;
-                                    //     }
-                                    // }
-                                    console.log(usersInGroup)
-                                    flag=false;
-                                }
-                            }
-                            if(flag){
-                                usersInGroup.push(item);
-                                console.log(usersInGroup)
 
+
+                            if (tempUserIdState.includes(item.id)) {
+                                setTempUserIdState(current => current.filter(tempUserId => {
+                                    return tempUserId != item.id;
+                                }))
+                            } else {
+                                const tempUsersListInGroup = tempUserIdState;
+                                tempUsersListInGroup.push(item.id);
+                                setTempUserIdState(tempUsersListInGroup);
                             }
-                            
-                            // if(item.added){
-                            //     for(let i=0;i<usersInGroup.length;i++){
-                            //         if(item.id === usersInGroup[i].id){
-                            //             usersInGroup.splice(i,1);
-                            //             for(let i=0;i<tempArray.length;i++){
-                            //                 if(item.id === tempArray.id){
-                            //                     tempArray[i].added = false;
-                            //                     setAllUsers(tempArray);
-                            //                     break;
-                            //                 }
-                            //             }
-                            //         }
-                            //     }
-                                
-                            //     console.log(usersInGroup);
-                            // }else{
-                            //     for(let i=0;i<usersInGroup.length;i++){
-                            //         if(item.id === usersInGroup[i].id){
-                                        
-                            //         }
-                            //     }
-                            //     usersInGroup.push(item);
-                            //     for(let i=0;i<tempArray.length;i++){
-                            //         if(item.id === tempArray.id){
-                            //             tempArray[i].added = true;
-                            //             console.log("Temp Array",tempArray[i]);
-                            //             setAllUsers(tempArray);
-                            //             break;
-                            //         }
-                            //     }
-                            //     console.log(usersInGroup);
-                                
-                            // }
+
+                            console.log(tempUserIdState);
+
+
                         }}
-                    // onPress={() => navigation.navigate('Chat', {
-                    //     userId: item.id,
-                    //     loggedInUserId: currentUserId,
-                    //     name: currentUser.name,
-                    //     avatar: currentUser.profileImageUrl,
-                    //     receipentName: item.userData.name,
-                    //     receipentProfileImage: item.userData.profileImageUrl
-                    // })}
                     >
                         <UserInfo>
 
@@ -238,9 +201,7 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                             <TextSection>
                                 <UserInfoText>
                                     <UserName>{item.userData.name}</UserName>
-                                    {/* <PostTime>{`${item.chatData[0].createdAt.toLocaleDateString()}`}</PostTime> */}
                                     <TouchableOpacity>
-
                                         {
                                             item.added ? <Feather style={styles.plus}
                                                 name="check-circle"
@@ -256,7 +217,6 @@ const AddPeopleInGroup = ({ navigation, route }) => {
                                         }
                                     </TouchableOpacity>
                                 </UserInfoText>
-                                {/* <MessageText>{item.chatData[0].text}</MessageText> */}
                             </TextSection>
                         </UserInfo>
                     </Card>
