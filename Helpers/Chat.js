@@ -1,7 +1,7 @@
 import { auth, fireDB, storage } from '../Firebase';
 // const loggedInUserId = auth.currentUser.uid;
 const chatDBRef = fireDB.collection('chats');
-// import { encryption, decryption } from './AES';
+import { encryption, decryption } from './AES';
 
 const storeChat = (chatId, message, loggedInUserId, isImage) => {
     console.log('chatId store chat: ', chatId);
@@ -25,7 +25,7 @@ const storeChat = (chatId, message, loggedInUserId, isImage) => {
             } else {
                 let result = await chatDBRef.doc(chatId).collection('chatData').add({
                     userId: loggedInUserId,
-                    text: message.text,
+                    text: message.text, 
                     createdAt: message.createdAt
                 })
             }
@@ -61,10 +61,11 @@ const getChat = (chatId) => {
             let allChat = chatDBRef.doc(chatId).collection('chatData').onSnapshot((querySnapshot) => {
                 const messagesFromFirestore = querySnapshot.docChanges().map(({ doc }) => {
                     const message = doc.data();
-                    console.log("hello here for message details ", message.createdAt.toDate(), message.text);
+                    // console.log("hello here for message details ", message.createdAt.toDate(), message.text);
                     return {
                         _id: doc.id,    // chatId
                         ...message,
+                        // text:decryption(message.userId,message.text), 
                         createdAt: message.createdAt.toDate()
                     }
                 }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());

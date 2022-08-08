@@ -229,9 +229,9 @@ const SettingsPage = ({ navigation }) => {
                 <View>
                     <Text style={styles.text_header2}>My account</Text>
                 </View>
-                {/* <View style={styles.header}>
+                <View style={styles.header}>
                     <Text style={styles.text_header}>My account</Text>
-                </View> */}
+                </View>
                 <View>
                     <Image
                         source={{ uri: url   }}
