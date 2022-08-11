@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
+        margin: 50,
         borderRadius: 16,
         flexDirection: 'row',
     },

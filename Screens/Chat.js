@@ -33,7 +33,8 @@ const Chat = ({ navigation, route }) => {
         pushToken: ''
     });
     // const [newChatId, setChatId] = useState(null);
-    const [receiversToken, setReceiversToken] = useState("");
+    // const [receiversToken, setReceiversToken] = useState("");
+    const receiversToken = useRef("");
     const { receipentName, receipentProfileImage, currentuserId } = route.params;
     const isGroup = route.params.isGroup;
     const [receipentData, setReceipentData] = useState({
@@ -77,9 +78,10 @@ const Chat = ({ navigation, route }) => {
                         setReceipentData({
                             ...userData
                         })
-                        console.log("setting recepient Status")
+                        console.log("setting recepient Status :: -> ", userData.pushToken)
                         setReceipentStatus(receipentData.status);
-                        setReceiversToken(userData.pushToken);
+                        // setReceiversToken(userData.pushToken);
+                        receiversToken.current = userData.pushToken;
                 });
             }
         }catch(error){
@@ -311,7 +313,7 @@ const Chat = ({ navigation, route }) => {
                 })
                 console.log("setting recepient Status")
                 setReceipentStatus(receipentData.status);
-                setReceiversToken(userData.pushToken);
+                // setReceiversToken(userData.pushToken);
             }
 
 
@@ -386,7 +388,7 @@ const Chat = ({ navigation, route }) => {
         // setMessagesAfterSend(messages);
 
         // notify other user
-        notifyUser(name, receiversToken, messages[0].text);
+        notifyUser(name, receiversToken.current, messages[0].text);
 
 
     }, []);
