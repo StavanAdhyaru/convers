@@ -389,7 +389,8 @@ const Chat = ({ navigation, route }) => {
         // setMessagesAfterSend(messages);
 
         // notify other user
-        notifyUser(name, receiversToken.current, messages[0].text);
+        console.log('loggedInUser: ', loggedInUser);
+        notifyUser(name, receiversToken, messages[0].text);
 
 
     }, []);
