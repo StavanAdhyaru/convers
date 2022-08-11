@@ -1,7 +1,7 @@
 import { auth, fireDB, storage } from '../Firebase';
 // const loggedInUserId = auth.currentUser.uid;
 const chatDBRef = fireDB.collection('chats');
-// import { encryption, decryption } from './AES';
+import { encryption, decryption } from './AES';
 
 const storeChat = (chatId, message, loggedInUserId, isImage) => {
     console.log('chatId store chat: ', chatId);
@@ -20,13 +20,15 @@ const storeChat = (chatId, message, loggedInUserId, isImage) => {
                     userId: loggedInUserId,
                     // text: message.text,
                     createdAt: message.createdAt,
-                    image: message.image
+                    image: message.image,
+                    type: "image"
                 })
             } else {
                 let result = await chatDBRef.doc(chatId).collection('chatData').add({
                     userId: loggedInUserId,
-                    text: message.text,
-                    createdAt: message.createdAt
+                    text: message.text, 
+                    createdAt: message.createdAt,
+                    type: "text"
                 })
             }
             resolve(chatId);
@@ -65,6 +67,7 @@ const getChat = (chatId) => {
                     return {
                         _id: doc.id,    // chatId
                         ...message,
+                        // text:decryption(message.userId,message.text), 
                         createdAt: message.createdAt.toDate()
                     }
                 }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());

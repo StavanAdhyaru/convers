@@ -14,7 +14,7 @@ import {
     TouchableOpacity,
     TextInput,
     StyleSheet,
-    Image
+    Image, Text
 } from 'react-native';
 import { getUserDetails, findUserByEmail } from '../Helpers/User';
 
@@ -67,13 +67,11 @@ const AddContact = ({ navigation, route }) => {
     return (
 
         
-
-        <Container>
-
-        
-        
         
 
+
+        <Container style={{marginTop:40}}>
+            <Text style={{height:20,fontSize:20}}>Add a Friend</Text>
             <View style={styles.itemsearch}>
 
                 <TextInput style={styles.searchText}

@@ -18,6 +18,7 @@ import {
     
 } from '@expo/vector-icons';
 
+
 const Chat = ({ navigation, route }) => {
     const isFocused = useIsFocused();
     const { userId, name, avatar, chatId } = route.params;

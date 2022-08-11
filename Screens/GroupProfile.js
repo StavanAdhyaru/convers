@@ -21,6 +21,7 @@ import {
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import * as ImagePicker from 'expo-image-picker';
 
 
 const { height } = Dimensions.get('screen');
@@ -28,6 +29,7 @@ const height_logo = height * 0.28;
 
 const GroupProfile = ({ navigattion, route }) => {
 
+    const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/convers-final.appspot.com/o/defaultProfileIcon.jpeg?alt=media&token=89d4381d-3489-4042-9ae3-a04388e0f956');
     const { groupId } = route.params;
     const [groupData, setGroupData] = useState({
         name: '',
@@ -79,7 +81,7 @@ const GroupProfile = ({ navigattion, route }) => {
     }
     const changeProfileImage = async () => {
         try {
-            setUrl(data.profileImageUrl);
+            setUrl(groupData.profileImageUrl);
             console.log('old old fetched from db ::: url: ', groupData.profileImageUrl);
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -115,6 +117,22 @@ const GroupProfile = ({ navigattion, route }) => {
             console.log('new url: ', tempUrl);
 
             await updateUserDoc(tempUrl);
+
+        } catch (error) {
+            console.log('error: ', error);
+
+        }
+    }
+    const updateUserDoc = async (tempUrl) => {
+        try {
+            // update user document
+            console.log('updating url: ', tempUrl);
+            let dbResponse = await fireDB.collection("groups").doc(`${groupId}`).update({ profileImageUrl: tempUrl });
+            console.log('dbResponse: ', dbResponse);
+            setData({
+                ...groupData,
+                profileImageUrl: url
+            });
 
         } catch (error) {
             console.log('error: ', error);
