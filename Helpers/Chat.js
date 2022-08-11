@@ -20,13 +20,15 @@ const storeChat = (chatId, message, loggedInUserId, isImage) => {
                     userId: loggedInUserId,
                     // text: message.text,
                     createdAt: message.createdAt,
-                    image: message.image
+                    image: message.image,
+                    type: "image"
                 })
             } else {
                 let result = await chatDBRef.doc(chatId).collection('chatData').add({
                     userId: loggedInUserId,
                     text: message.text, 
-                    createdAt: message.createdAt
+                    createdAt: message.createdAt,
+                    type: "text"
                 })
             }
             resolve(chatId);
